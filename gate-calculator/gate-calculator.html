@@ -1221,68 +1221,67 @@
       }
     });
 
-    // Scratch Pad draggable
+    // =====================================================================
+    //  DRAGGABLE (both panels)
+    // =====================================================================
     (function () {
-      var sp     = document.getElementById('scratchPad');
-      var handle = document.getElementById('scratchPadHeader');
-      var dragging = false, ox, oy, sx, sy;
+      function makeDraggable(el, handle, skipIds) {
+        var dragging = false, ox, oy, sx, sy;
+        handle.style.cursor = 'move';
 
-      handle.style.cursor = 'move';
+        handle.addEventListener('mousedown', function (e) {
+          if (skipIds.indexOf(e.target.id) !== -1) return;
+          var rect = el.getBoundingClientRect();
+          ox = rect.left; oy = rect.top;
+          sx = e.clientX;  sy = e.clientY;
+          el.style.position = 'fixed';
+          el.style.left     = ox + 'px';
+          el.style.top      = oy + 'px';
+          el.style.margin   = '0';
+          dragging = true;
+          e.preventDefault();
+        });
 
-      handle.addEventListener('mousedown', function (e) {
-        var tid = e.target.id;
-        if (tid === 'scratchClear' || tid === 'scratchMin') return;
-        var rect = sp.getBoundingClientRect();
-        ox = rect.left; oy = rect.top;
-        sx = e.clientX;  sy = e.clientY;
+        document.addEventListener('mousemove', function (e) {
+          if (!dragging) return;
+          el.style.left = (ox + e.clientX - sx) + 'px';
+          el.style.top  = (oy + e.clientY - sy) + 'px';
+        });
+
+        document.addEventListener('mouseup', function () { dragging = false; });
+      }
+
+      // Snapshot BOTH rects before touching the DOM, then apply together.
+      // This prevents the flex re-flow from shifting the second panel's
+      // position after the first panel is removed from the flow.
+      window.addEventListener('load', function () {
+        var kp = document.getElementById('keyPad');
+        var sp = document.getElementById('scratchPad');
+        var rk = kp.getBoundingClientRect();
+        var rs = sp.getBoundingClientRect();
+
+        kp.style.position = 'fixed';
+        kp.style.left     = rk.left + 'px';
+        kp.style.top      = rk.top  + 'px';
+        kp.style.margin   = '0';
+
         sp.style.position = 'fixed';
-        sp.style.left     = ox + 'px';
-        sp.style.top      = oy + 'px';
+        sp.style.left     = rs.left + 'px';
+        sp.style.top      = rs.top  + 'px';
         sp.style.margin   = '0';
-        dragging = true;
-        e.preventDefault();
       });
 
-      document.addEventListener('mousemove', function (e) {
-        if (!dragging) return;
-        sp.style.left = (ox + e.clientX - sx) + 'px';
-        sp.style.top  = (oy + e.clientY - sy) + 'px';
-      });
+      makeDraggable(
+        document.getElementById('keyPad'),
+        document.getElementById('helptopDiv'),
+        ['keyPad_Help', 'keyPad_Helpback', 'calc_min']
+      );
 
-      document.addEventListener('mouseup', function () { dragging = false; });
-    })();
-
-    // =====================================================================
-    //  DRAGGABLE
-    // =====================================================================
-    (function () {
-      var el     = document.getElementById('keyPad');
-      var handle = document.getElementById('helptopDiv');
-      var dragging = false, ox, oy, sx, sy;
-
-      handle.style.cursor = 'move';
-
-      handle.addEventListener('mousedown', function (e) {
-        var tid = e.target.id;
-        if (tid === 'keyPad_Help' || tid === 'keyPad_Helpback' || tid === 'calc_min') return;
-        var rect = el.getBoundingClientRect();
-        ox = rect.left; oy = rect.top;
-        sx = e.clientX;  sy = e.clientY;
-        el.style.position = 'fixed';
-        el.style.left     = ox + 'px';
-        el.style.top      = oy + 'px';
-        el.style.margin   = '0';
-        dragging = true;
-        e.preventDefault();
-      });
-
-      document.addEventListener('mousemove', function (e) {
-        if (!dragging) return;
-        el.style.left = (ox + e.clientX - sx) + 'px';
-        el.style.top  = (oy + e.clientY - sy) + 'px';
-      });
-
-      document.addEventListener('mouseup', function () { dragging = false; });
+      makeDraggable(
+        document.getElementById('scratchPad'),
+        document.getElementById('scratchPadHeader'),
+        ['scratchClear', 'scratchMin']
+      );
     })();
   </script>
 </body>
