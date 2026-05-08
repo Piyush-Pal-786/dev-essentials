@@ -253,4 +253,8 @@ Works in all modern browsers:
 
 No polyfills required.
 
+---
 
+## License
+
+MIT — free to use, modify, and distribute.

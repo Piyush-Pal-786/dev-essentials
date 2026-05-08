@@ -4,7 +4,7 @@ A fully self-contained, single-page scientific calculator built with pure HTML, 
 
 ## Live Demo
 
-Open `index.html` directly in any modern browser to use the calculator.
+Open `gate-calculator.html` directly in any modern browser to use the calculator.
 
 ---
 
@@ -52,6 +52,12 @@ Select the angle unit before performing any trigonometric calculation.
 ### Parentheses Support
 - Group sub-expressions using `(` and `)` to control operator precedence.
 
+### Scratch Pad
+- A companion **Scratch Pad** panel sits beside the calculator.
+- Use it to jot intermediate values, notes, or reminders in free text.
+- Supports **Minimize / restore** and a one-click **Clear** button.
+- Completely independent from the calculator state — nothing typed here affects the calculation.
+
 ### Keyboard / Other Controls
 | Button | Action |
 |---|---|
@@ -67,13 +73,13 @@ Select the angle unit before performing any trigonometric calculation.
 
 ```bash
 # Clone the repository
-git clone https://github.com/<your-username>/gate-calculator.git
+git clone https://github.com/<your-username>/dev-essentials.git
 
 # Open the calculator
-cd gate-calculator
-open index.html        # macOS
-start index.html       # Windows
-xdg-open index.html    # Linux
+cd dev-essentials/gate-calculator
+open gate-calculator.html        # macOS
+start gate-calculator.html       # Windows
+xdg-open gate-calculator.html    # Linux
 ```
 
 No installation, no dependencies.
@@ -84,7 +90,9 @@ No installation, no dependencies.
 
 ```
 gate-calculator/
-└── index.html   # Complete self-contained application (HTML + CSS + JS)
+├── gate-calculator.html   # Complete self-contained application (HTML + CSS + JS)
+├── README.md              # Project documentation
+└── CHANGELOG.md           # Version history
 ```
 
 All styles and logic are inlined in a single file for maximum portability.
@@ -100,10 +108,11 @@ Works in all modern browsers (Chrome, Firefox, Edge, Safari). No polyfills neede
 ## Limitations
 
 - Keyboard input is disabled; use the on-screen buttons only.
-- Factorial results are precise up to 14 digits.
+- Factorial results are precise up to 14 digits (results above 170 return `Infinity`).
 - Logarithmic and hyperbolic results are precise up to 5 decimal places.
 - Modulus on decimal numbers with 15+ digits may lose precision.
 - Supported numeric range: `10⁻³²³` to `10³⁰⁸`.
+- Unbalanced parentheses will cause a math error; always close every `(`.
 
 ---
 
