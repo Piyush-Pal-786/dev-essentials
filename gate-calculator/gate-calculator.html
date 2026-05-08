@@ -198,7 +198,7 @@
       width: 35px;
       height: 55px;
       position: absolute;
-      right: 0;
+      right: 5px;
       top: 0;
       float: none;
       margin-right: 0;
@@ -367,12 +367,12 @@
 
       <div class="left_sec">
         <!-- Row 1: mod, deg/rad, memory -->
-        <div class="calc_row clear">
-          <a href="#nogo" id="keyPad_btnMod"  class="keyPad_btnBinaryOp">mod</a>
-          <div class="degree_radian">
+        <div class="calc_row" style="display:flex; align-items:center;">
+          <a href="#nogo" id="keyPad_btnMod" class="keyPad_btnBinaryOp" style="flex-shrink:0;">mod</a>
+          <div class="degree_radian" style="flex:1; float:none;">
             <input type="radio" name="degree_or_radian" value="deg" checked /> Deg<br />
             <input type="radio" name="degree_or_radian" value="rad" /> Rad
-          </div>
+          </div style="margin-right:5px;">
           <a href="#nogo" id="keyPad_MC"  class="keyPad_btnMemoryOp">MC</a>
           <a href="#nogo" id="keyPad_MR"  class="keyPad_btnMemoryOp">MR</a>
           <a href="#nogo" id="keyPad_MS"  class="keyPad_btnMemoryOp">MS</a>
