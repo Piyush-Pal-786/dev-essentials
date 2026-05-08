@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASCII Tree Generator</title>
+  <style>
+    /* ── CSS custom properties ── */
+    :root {
+      --bg:         #1e1e2e;
+      --surface:    #27273a;
+      --surface2:   #313145;
+      --border:     #44445a;
+      --text:       #cdd6f4;
+      --muted:      #6c7086;
+      --accent:     #89b4fa;
+      --accent2:    #cba6f7;
+      --green:      #a6e3a1;
+      --red:        #f38ba8;
+      --yellow:     #f9e2af;
+    }
+    [data-theme="light"] {
+      --bg:         #eff1f5;
+      --surface:    #e6e9ef;
+      --surface2:   #dce0e8;
+      --border:     #ccd0da;
+      --text:       #4c4f69;
+      --muted:      #9ca0b0;
+      --accent:     #1e66f5;
+      --accent2:    #8839ef;
+      --green:      #40a02b;
+      --red:        #d20f39;
+      --yellow:     #df8e1d;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      row-gap: 6px;
+      z-index: 10;
+    }
+    header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+    .hdr-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+    .hdr-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .hdr-spacer { flex: 1; }
+
+    /* label inline */
+    .lbl { font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+
+    /* ── CONTROLS ── */
+    select, input[type="text"] {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus, input[type="text"]:focus {
+      border-color: var(--accent);
+    }
+    button {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.12s, border-color 0.12s;
+    }
+    button:hover { background: var(--border); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    button.primary {
+      background: var(--accent); color: #1e1e2e;
+      border-color: var(--accent); font-weight: 600;
+    }
+    button.primary:hover { opacity: 0.85; }
+    button.danger {
+      background: var(--red); color: #1e1e2e;
+      border-color: var(--red); font-weight: 600;
+    }
+    button.danger:hover { opacity: 0.85; }
+    label.ck {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 0.79rem; cursor: pointer; white-space: nowrap;
+    }
+    label.ck input { accent-color: var(--accent); }
+
+    /* ── STATS BAR ── */
+    .stats-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 3px 18px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+    }
+    .stats-bar b { color: var(--text); }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .panel-hdr {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 5px 14px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .badge {
+      font-size: 0.7rem;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1px 8px;
+      margin-left: auto;
+    }
+
+    /* ── DRAG DIVIDER ── */
+    .divider {
+      width: 5px;
+      flex-shrink: 0;
+      background: var(--border);
+      cursor: col-resize;
+      transition: background 0.12s;
+      position: relative;
+    }
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 3px;
+      height: 40px;
+      border-radius: 2px;
+      background: var(--muted);
+    }
+    .divider:hover, .divider.active { background: var(--accent); }
+
+    /* ── INPUT EDITOR ── */
+    #inp {
+      flex: 1;
+      resize: none;
+      background: var(--bg);
+      color: var(--text);
+      border: none;
+      outline: none;
+      padding: 14px 16px;
+      font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      font-size: 0.87rem;
+      line-height: 1.68;
+      tab-size: 4;
+      overflow: auto;
+    }
+    #inp::placeholder { color: var(--muted); }
+
+    /* ── OUTPUT TOOLBAR ── */
+    .out-toolbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 5px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+    .copied-msg {
+      font-size: 0.75rem;
+      color: var(--green);
+      opacity: 0;
+      transition: opacity 0.28s;
+    }
+    .copied-msg.show { opacity: 1; }
+
+    /* ── SEARCH BAR ── */
+    .search-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 4px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .search-bar input[type="text"] { width: 190px; }
+    #search-count { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+
+    /* ── OUTPUT AREA ── */
+    #out-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 14px 16px;
+      background: var(--bg);
+    }
+    #out {
+      font-family: 'Cascadia Code', 'Consolas', 'Courier New', monospace;
+      font-size: 0.87rem;
+      line-height: 1.68;
+      white-space: pre;
+      color: var(--text);
+    }
+    mark {
+      background: var(--yellow);
+      color: #1e1e2e;
+      border-radius: 2px;
+    }
+    .err {
+      font-size: 0.8rem;
+      color: var(--red);
+      padding: 6px 14px;
+      display: none;
+      flex-shrink: 0;
+    }
+    .err.show { display: block; }
+
+    /* ── SCROLLBARS ── */
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      main { flex-direction: column; }
+      .divider { width: 100%; height: 5px; cursor: row-resize; }
+      .divider::after { width: 40px; height: 3px; }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header>
+  <h1>⛶ ASCII Tree Generator</h1>
+
+  <div class="hdr-sep"></div>
+
+  <div class="hdr-group">
+    <span class="lbl">Style:</span>
+    <select id="sel-style" title="Tree connector style">
+      <option value="classic">Classic  ├── └──</option>
+      <option value="rounded">Rounded  ├── ╰──</option>
+      <option value="double">Double   ╠══ ╚══</option>
+      <option value="simple">Simple   +-- `--</option>
+      <option value="star">Star     *-- *--</option>
+      <option value="arrow">Arrow    ↣── ↳──</option>
+    </select>
+
+    <span class="lbl">Indent:</span>
+    <select id="sel-indent" title="Indent unit used in input">
+      <option value="2">2 spaces</option>
+      <option value="4" selected>4 spaces</option>
+      <option value="tab">Tab</option>
+    </select>
+  </div>
+
+  <div class="hdr-sep"></div>
+
+  <div class="hdr-group">
+    <label class="ck" title="Append / to parent nodes">
+      <input type="checkbox" id="ck-slash"> Trailing /
+    </label>
+    <label class="ck" title="Print root node name as first line">
+      <input type="checkbox" id="ck-root" checked> Show root
+    </label>
+    <label class="ck" title="Show full path for every node">
+      <input type="checkbox" id="ck-path"> Full paths
+    </label>
+    <label class="ck" title="Prefix each output line with a number">
+      <input type="checkbox" id="ck-linenum"> Line #
+    </label>
+    <label class="ck" title="Wrap output in a Markdown code fence automatically">
+      <input type="checkbox" id="ck-mdfence"> MD fence
+    </label>
+  </div>
+
+  <div class="hdr-spacer"></div>
+
+  <div class="hdr-group">
+    <span class="lbl">Export as:</span>
+    <select id="sel-export">
+      <option value="plain">Plain text</option>
+      <option value="markdown">Markdown block</option>
+      <option value="html">HTML pre</option>
+      <option value="json">JSON tree</option>
+    </select>
+    <button id="btn-import" title="Import a .txt file (or drag-drop onto the editor)">⬆ Import</button>
+    <input type="file" id="file-inp" accept=".txt,.md" style="display:none" />
+    <button id="btn-download" title="Download the output">⬇ Download</button>
+    <button id="btn-clear" class="danger" title="Clear editor">✕ Clear</button>
+    <button id="btn-theme" title="Toggle light / dark theme">☀ Theme</button>
+  </div>
+</header>
+
+<!-- ═══════════════ STATS BAR ═══════════════ -->
+<div class="stats-bar">
+  <span>Nodes: <b id="s-nodes">0</b></span>
+  <span>Depth: <b id="s-depth">0</b></span>
+  <span>Leaves: <b id="s-leaves">0</b></span>
+  <span>Output lines: <b id="s-lines">0</b></span>
+  <span>Characters: <b id="s-chars">0</b></span>
+</div>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main id="main">
+
+  <!-- ─── INPUT PANEL ─── -->
+  <div class="panel" id="left-panel">
+    <div class="panel-hdr">
+      ✏ Input
+      <span class="badge" id="indent-badge">indent: 4 spaces</span>
+    </div>
+    <textarea id="inp" spellcheck="false"
+      placeholder="Type or paste an indented list. Each indentation level = child node.
+
+Example (4-space indent):
+project
+    src
+        main.c
+        utils.c
+    include
+        config.h
+    docs
+        README.md
+    Makefile"></textarea>
+  </div>
+
+  <!-- ─── RESIZABLE DIVIDER ─── -->
+  <div class="divider" id="divider"></div>
+
+  <!-- ─── OUTPUT PANEL ─── -->
+  <div class="panel" id="right-panel">
+    <div class="panel-hdr">⛶ Output</div>
+
+    <div class="out-toolbar">
+      <button id="btn-copy" class="primary">⧉ Copy</button>
+      <button id="btn-copy-md">⧉ Copy as Markdown</button>
+      <button id="btn-copy-json">⧉ Copy as JSON</button>
+      <span class="copied-msg" id="copied-msg">Copied!</span>
+    </div>
+
+    <div class="search-bar">
+      <span style="font-size:0.82rem;color:var(--muted)">🔍</span>
+      <input type="text" id="search-inp" placeholder="Search / highlight in output…" />
+      <label class="ck">
+        <input type="checkbox" id="ck-case"> Case sensitive
+      </label>
+      <span id="search-count"></span>
+    </div>
+
+    <div class="err" id="err-msg"></div>
+
+    <div id="out-wrap">
+      <pre id="out"></pre>
+    </div>
+  </div>
+
+</main>
+
+<script>
+"use strict";
+
+// ══════════════════════════════════════════════════
+// TREE CONNECTOR STYLE DEFINITIONS
+// ══════════════════════════════════════════════════
+const STYLES = {
+  classic: { mid: "├── ", last: "└── ", cont: "│   ", blank: "    " },
+  rounded: { mid: "├── ", last: "╰── ", cont: "│   ", blank: "    " },
+  double:  { mid: "╠══ ", last: "╚══ ", cont: "║   ", blank: "    " },
+  simple:  { mid: "+-- ", last: "`-- ", cont: "|   ", blank: "    " },
+  star:    { mid: "*── ", last: "*── ", cont: "|   ", blank: "    " },
+  arrow:   { mid: "↣── ", last: "↳── ", cont: "│   ", blank: "    " },
+};
+
+// ══════════════════════════════════════════════════
+// DOM REFERENCES
+// ══════════════════════════════════════════════════
+const D = id => document.getElementById(id);
+const inp         = D("inp");
+const outPre      = D("out");
+const selStyle    = D("sel-style");
+const selIndent   = D("sel-indent");
+const ckSlash     = D("ck-slash");
+const ckRoot      = D("ck-root");
+const ckPath      = D("ck-path");
+const ckLinenum   = D("ck-linenum");
+const ckMdFence   = D("ck-mdfence");
+const selExport   = D("sel-export");
+const btnCopy     = D("btn-copy");
+const btnCopyMd   = D("btn-copy-md");
+const btnCopyJson = D("btn-copy-json");
+const copiedMsg   = D("copied-msg");
+const btnDownload = D("btn-download");
+const btnClear    = D("btn-clear");
+const btnImport   = D("btn-import");
+const fileInp     = D("file-inp");
+const btnTheme    = D("btn-theme");
+const searchInp   = D("search-inp");
+const ckCase      = D("ck-case");
+const searchCount = D("search-count");
+const errMsg      = D("err-msg");
+const indentBadge = D("indent-badge");
+const divider     = D("divider");
+const leftPanel   = D("left-panel");
+const rightPanel  = D("right-panel");
+const mainEl      = D("main");
+const sNodes      = D("s-nodes");
+const sDepth      = D("s-depth");
+const sLeaves     = D("s-leaves");
+const sLines      = D("s-lines");
+const sChars      = D("s-chars");
+
+// ══════════════════════════════════════════════════
+// PARSE INDENTED TEXT → TREE NODES
+// ══════════════════════════════════════════════════
+
+/**
+ * Returns the indentation level of a raw line based on the selected indent unit.
+ */
+function lineLevel(raw) {
+  const unit = selIndent.value;
+  if (unit === "tab") {
+    let i = 0;
+    while (i < raw.length && raw[i] === "\t") i++;
+    return i;
+  }
+  const spaces = parseInt(unit, 10);
+  let i = 0;
+  while (i < raw.length && raw[i] === " ") i++;
+  return Math.floor(i / spaces);
+}
+
+/**
+ * Parses the textarea into an array of { level, name } objects,
+ * skipping blank lines.
+ */
+function parseInput(text) {
+  return text
+    .split("\n")
+    .filter(l => l.trim() !== "")
+    .map(l => ({ level: lineLevel(l), name: l.trim() }));
+}
+
+/**
+ * Builds a virtual tree from parsed lines.
+ * Returns a synthetic root whose .children are the top-level nodes.
+ */
+function buildTree(parsed) {
+  const root = { name: "__root__", level: -1, children: [] };
+  const stack = [root];
+  for (const { level, name } of parsed) {
+    const node = { name, level, children: [] };
+    while (stack.length > 1 && stack[stack.length - 1].level >= level) {
+      stack.pop();
+    }
+    stack[stack.length - 1].children.push(node);
+    stack.push(node);
+  }
+  return root;
+}
+
+// ══════════════════════════════════════════════════
+// RENDER TREE → ASCII LINES
+// ══════════════════════════════════════════════════
+
+/**
+ * Recursively renders a node and its children into the `lines` array.
+ *
+ * @param {object} node    - the tree node
+ * @param {string} prefix  - prefix string accumulated from parents
+ * @param {boolean} isLast - whether this node is its parent's last child
+ * @param {object} s       - connector style object
+ * @param {object} opts    - rendering options
+ * @param {string} pathSoFar - full path string for the "full paths" option
+ * @param {string[]} lines   - output accumulator
+ * @param {number[]} maxD    - single-element array used to track max depth
+ * @param {number} depth     - current depth
+ */
+function renderNode(node, prefix, isLast, s, opts, pathSoFar, lines, maxD, depth) {
+  maxD[0] = Math.max(maxD[0], depth);
+  const connector = isLast ? s.last : s.mid;
+  const childPfx  = prefix + (isLast ? s.blank : s.cont);
+  const hasKids   = node.children.length > 0;
+  const label     = opts.slash && hasKids ? node.name + "/" : node.name;
+  const fullPath  = pathSoFar ? pathSoFar + "/" + label : label;
+  const display   = opts.path ? fullPath : label;
+  lines.push(prefix + connector + display);
+  for (let i = 0; i < node.children.length; i++) {
+    renderNode(
+      node.children[i],
+      childPfx,
+      i === node.children.length - 1,
+      s, opts,
+      opts.path ? fullPath : "",
+      lines, maxD, depth + 1
+    );
+  }
+}
+
+/**
+ * Converts the textarea content to ASCII lines and returns them as a string.
+ * Also updates the stats bar and drives the search highlight.
+ */
+function buildOutput(text) {
+  errMsg.classList.remove("show");
+  if (!text.trim()) {
+    updateStats(null, []);
+    return "";
+  }
+
+  const parsed = parseInput(text);
+  if (parsed.length === 0) { updateStats(null, []); return ""; }
+
+  const tree  = buildTree(parsed);
+  const s     = STYLES[selStyle.value] || STYLES.classic;
+  const opts  = { slash: ckSlash.checked, path: ckPath.checked };
+  const lines = [];
+  const maxD  = [0];
+
+  if (ckRoot.checked) {
+    // Each top-level node is rendered with its name on its own line, followed
+    // by its children using indented connectors.
+    for (const top of tree.children) {
+      const hasKids = top.children.length > 0;
+      const lbl     = opts.slash && hasKids ? top.name + "/" : top.name;
+      lines.push(opts.path ? lbl : lbl);
+      for (let i = 0; i < top.children.length; i++) {
+        renderNode(
+          top.children[i], "", i === top.children.length - 1,
+          s, opts, opts.path ? lbl : "", lines, maxD, 1
+        );
+      }
+    }
+  } else {
+    for (let i = 0; i < tree.children.length; i++) {
+      renderNode(
+        tree.children[i], "", i === tree.children.length - 1,
+        s, opts, "", lines, maxD, 0
+      );
+    }
+  }
+
+  // Optional line numbers
+  if (ckLinenum.checked) {
+    const pad = String(lines.length).length;
+    for (let i = 0; i < lines.length; i++) {
+      lines[i] = String(i + 1).padStart(pad) + "  " + lines[i];
+    }
+  }
+
+  // Optional Markdown fence wrapping
+  if (ckMdFence.checked) {
+    lines.unshift("```");
+    lines.push("```");
+  }
+
+  // Stats
+  const stats = { nodes: 0, leaves: 0, maxDepth: 0 };
+  for (const c of tree.children) gatherStats(c, stats, 1);
+  updateStats(stats, lines);
+
+  return lines.join("\n");
+}
+
+function gatherStats(node, stats, depth) {
+  stats.nodes++;
+  stats.maxDepth = Math.max(stats.maxDepth, depth);
+  if (node.children.length === 0) stats.leaves++;
+  for (const c of node.children) gatherStats(c, stats, depth + 1);
+}
+
+function updateStats(stats, lines) {
+  if (!stats) {
+    sNodes.textContent = sDepth.textContent =
+    sLeaves.textContent = sLines.textContent = sChars.textContent = "0";
+    return;
+  }
+  sNodes.textContent  = stats.nodes;
+  sDepth.textContent  = stats.maxDepth;
+  sLeaves.textContent = stats.leaves;
+  sLines.textContent  = lines.length;
+  sChars.textContent  = lines.join("\n").length;
+}
+
+// ══════════════════════════════════════════════════
+// SEARCH & HIGHLIGHT
+// ══════════════════════════════════════════════════
+
+function escHtml(str) {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+function escRe(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Stores the last plain-text output so search can re-highlight without re-rendering.
+let lastPlainOutput = "";
+
+function applySearch(rawText) {
+  const q = searchInp.value;
+  if (!q) {
+    outPre.innerHTML = "";
+    outPre.textContent = rawText;
+    searchCount.textContent = "";
+    return;
+  }
+  try {
+    const flags   = ckCase.checked ? "g" : "gi";
+    const re      = new RegExp(escRe(q), flags);
+    const matches = [...rawText.matchAll(re)];
+    searchCount.textContent =
+      matches.length ? `${matches.length} match${matches.length !== 1 ? "es" : ""}` : "no matches";
+    const html = escHtml(rawText).replace(
+      new RegExp(escRe(escHtml(q)), flags),
+      m => `<mark>${m}</mark>`
+    );
+    outPre.innerHTML = html;
+  } catch {
+    outPre.textContent = rawText;
+    searchCount.textContent = "";
+  }
+}
+
+function refresh() {
+  lastPlainOutput = buildOutput(inp.value);
+  applySearch(lastPlainOutput);
+}
+
+// ══════════════════════════════════════════════════
+// EXPORT FORMATS
+// ══════════════════════════════════════════════════
+
+function getExportContent() {
+  const fmt = selExport.value;
+  if (fmt === "plain")    return lastPlainOutput;
+  if (fmt === "markdown") return "```\n" + lastPlainOutput + "\n```";
+  if (fmt === "html")     return "<pre>\n" + escHtml(lastPlainOutput) + "\n</pre>";
+  if (fmt === "json")     return buildJsonExport();
+  return lastPlainOutput;
+}
+
+function buildJsonExport() {
+  const text = inp.value.trim();
+  if (!text) return "{}";
+  const parsed = parseInput(text);
+  const tree   = buildTree(parsed);
+  function toJson(n) {
+    const o = { name: n.name };
+    if (n.children.length) o.children = n.children.map(toJson);
+    return o;
+  }
+  const roots = tree.children.map(toJson);
+  return JSON.stringify(roots.length === 1 ? roots[0] : roots, null, 2);
+}
+
+// ══════════════════════════════════════════════════
+// COPY HELPERS
+// ══════════════════════════════════════════════════
+
+let copiedTimer = null;
+function flashCopied(msg) {
+  copiedMsg.textContent = msg || "Copied!";
+  copiedMsg.classList.add("show");
+  clearTimeout(copiedTimer);
+  copiedTimer = setTimeout(() => copiedMsg.classList.remove("show"), 1800);
+}
+
+function copyText(str, label) {
+  navigator.clipboard.writeText(str).then(
+    () => flashCopied(label || "Copied!"),
+    () => {
+      // Fallback for environments without clipboard API
+      const ta = Object.assign(document.createElement("textarea"), {
+        value: str, style: "position:fixed;opacity:0;"
+      });
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      flashCopied(label || "Copied!");
+    }
+  );
+}
+
+btnCopy.addEventListener("click",     () => copyText(getExportContent(), "Copied!"));
+btnCopyMd.addEventListener("click",   () => copyText("```\n" + lastPlainOutput + "\n```", "Markdown copied!"));
+btnCopyJson.addEventListener("click", () => copyText(buildJsonExport(), "JSON copied!"));
+
+// ══════════════════════════════════════════════════
+// DOWNLOAD
+// ══════════════════════════════════════════════════
+
+btnDownload.addEventListener("click", () => {
+  const content = getExportContent();
+  const extMap  = { plain: "txt", markdown: "md", html: "html", json: "json" };
+  const ext     = extMap[selExport.value] || "txt";
+  const blob    = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const a       = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(blob),
+    download: "ascii-tree." + ext
+  });
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+
+// ══════════════════════════════════════════════════
+// IMPORT FILE  (button + drag-and-drop)
+// ══════════════════════════════════════════════════
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => { inp.value = e.target.result; refresh(); };
+  reader.readAsText(file, "utf-8");
+}
+
+btnImport.addEventListener("click", () => fileInp.click());
+fileInp.addEventListener("change", () => {
+  if (fileInp.files[0]) loadFile(fileInp.files[0]);
+  fileInp.value = "";
+});
+inp.addEventListener("dragover", e => e.preventDefault());
+inp.addEventListener("drop", e => {
+  e.preventDefault();
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+
+// ══════════════════════════════════════════════════
+// CLEAR
+// ══════════════════════════════════════════════════
+
+btnClear.addEventListener("click", () => {
+  if (!inp.value.trim() || confirm("Clear all input?")) {
+    inp.value = "";
+    refresh();
+  }
+});
+
+// ══════════════════════════════════════════════════
+// THEME TOGGLE
+// ══════════════════════════════════════════════════
+
+btnTheme.addEventListener("click", () => {
+  const body = document.body;
+  const next = body.dataset.theme === "dark" ? "light" : "dark";
+  body.dataset.theme = next;
+  btnTheme.textContent = next === "dark" ? "☀ Theme" : "🌙 Theme";
+});
+
+// ══════════════════════════════════════════════════
+// RESIZABLE DIVIDER
+// ══════════════════════════════════════════════════
+
+let isDragging = false;
+
+divider.addEventListener("mousedown", e => {
+  isDragging = true;
+  divider.classList.add("active");
+  e.preventDefault();
+});
+document.addEventListener("mousemove", e => {
+  if (!isDragging) return;
+  const rect  = mainEl.getBoundingClientRect();
+  const total = rect.width - divider.offsetWidth;
+  const pct   = Math.min(Math.max((e.clientX - rect.left) / total * 100, 20), 80);
+  leftPanel.style.cssText  = `flex: none; width: ${pct}%`;
+  rightPanel.style.cssText = "flex: 1";
+});
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+  divider.classList.remove("active");
+});
+
+// ══════════════════════════════════════════════════
+// TAB KEY IN EDITOR
+// ══════════════════════════════════════════════════
+
+inp.addEventListener("keydown", e => {
+  if (e.key !== "Tab") return;
+  e.preventDefault();
+  const unit   = selIndent.value;
+  const spaces = unit === "tab" ? "\t" : " ".repeat(parseInt(unit, 10));
+  const s      = inp.selectionStart;
+  const end    = inp.selectionEnd;
+  inp.value    = inp.value.slice(0, s) + spaces + inp.value.slice(end);
+  inp.selectionStart = inp.selectionEnd = s + spaces.length;
+  refresh();
+});
+
+// ══════════════════════════════════════════════════
+// LIVE REFRESH EVENT WIRING
+// ══════════════════════════════════════════════════
+
+inp.addEventListener("input", refresh);
+selStyle.addEventListener("change", refresh);
+selIndent.addEventListener("change", () => {
+  const v        = selIndent.value;
+  indentBadge.textContent = v === "tab" ? "indent: tab" : `indent: ${v} spaces`;
+  refresh();
+});
+[ckSlash, ckRoot, ckPath, ckLinenum, ckMdFence].forEach(el => el.addEventListener("change", refresh));
+searchInp.addEventListener("input", () => applySearch(lastPlainOutput));
+ckCase.addEventListener("change",   () => applySearch(lastPlainOutput));
+
+// ══════════════════════════════════════════════════
+// INITIAL EXAMPLE
+// ══════════════════════════════════════════════════
+
+inp.value = `project_root
+    Makefile
+    CMakeLists.txt
+    components
+        component_a
+            src
+                main.c
+                utils.c
+            include
+                component_a.h
+            test
+                test_main.c
+            doc
+                index.rst
+                design.rst
+                api.rst
+        component_b
+            src
+                driver.c
+            include
+                driver.h
+            doc
+                index.rst
+                design.rst
+    docs
+        conf.py
+        index.rst
+        architecture
+            overview.rst
+            interfaces.rst
+        user_guide
+            getting_started.rst
+            flashing.rst
+            troubleshooting.rst
+    tools
+        scripts
+            flash.py
+            diagnose.py
+            search_targz.py
+    build`;
+
+refresh();
+</script>
+</body>
+</html>
