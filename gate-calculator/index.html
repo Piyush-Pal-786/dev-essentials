@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scientific Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 30px 10px;
+      margin: 0;
+    }
+
+    .calc_container {
+      background: #dadada;
+      border: 1px solid #aaa;
+      border-radius: 5px;
+      box-shadow: 0 0 15px 0 rgba(0,0,0,0.1) inset;
+      width: 463px;
+      border-bottom: 7px solid #999;
+      position: relative;
+    }
+
+    #helptopDiv {
+      margin-bottom: 5px;
+      padding: 10px;
+      background-color: #4286f3;
+      color: #fff;
+    }
+
+    #helptopDiv span {
+      font-size: 16px;
+      font-weight: bold;
+    }
+
+    #keyPad_Help, #keyPad_Helpback {
+      color: #fff;
+      background: #2563eb;
+      border: 1px solid #1e4fc0;
+      border-radius: 4px;
+      width: 60px;
+      height: 25px;
+      padding: 0 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 23px;
+      position: absolute;
+      right: 42px;
+      text-align: center;
+      top: 7px;
+      user-select: none;
+    }
+
+    #keyPad_Help:hover, #keyPad_Helpback:hover {
+      background: #1d4ed8;
+    }
+
+    .calc_min, .calc_max {
+      background: #555;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 16px;
+      position: absolute;
+      right: 10px;
+      text-align: center;
+      top: 10px;
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .calc_min:hover, .calc_max:hover {
+      background: #333;
+    }
+
+    .hide { display: none !important; }
+
+    #mainContentArea {
+      padding: 10px;
+    }
+
+    .keyPad_TextBox1, .keyPad_TextBox {
+      background: #fff;
+      border: 1px solid #aaa;
+      border-bottom: 3px solid #aaa;
+      border-radius: 3px;
+      font-size: 16px;
+      height: 30px;
+      line-height: 30px;
+      text-align: right;
+      width: 434px;
+      float: left;
+      margin-bottom: 5px;
+      padding-right: 8px;
+      color: #222;
+    }
+
+    .keyPad_TextBox {
+      font-size: 20px;
+    }
+
+    .text_container {
+      display: block;
+      position: relative;
+    }
+
+    .memoryhide {
+      visibility: hidden;
+      position: absolute;
+      top: 35px;
+      left: 4px;
+      opacity: 0;
+      transition: opacity 0.4s, visibility 0.4s;
+      font-size: 12px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .memoryshow {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .clear { clear: both; }
+
+    .left_sec { float: left; }
+
+    .calc_row {
+      display: block;
+      overflow: hidden;
+      margin-bottom: 5px;
+      /* min-height: 60px; >= Enter button height */
+    }
+
+    /* Buttons */
+    #keyPad a {
+      background: #f1f1f1;
+      border-color: #aaa;
+      border-radius: 4px;
+      border-style: solid;
+      border-width: 1px 1px 3px;
+      color: #444;
+      cursor: pointer;
+      float: left;
+      font-size: 12px;
+      font-weight: bold;
+      height: 25px;
+      line-height: 20px;
+      margin-right: 5px;
+      text-align: center;
+      text-decoration: none;
+      vertical-align: middle;
+      width: 35px;
+      user-select: none;
+    }
+
+    #keyPad a.min { font-size: 10.5px; }
+
+    #keyPad a:active {
+      position: relative;
+      border-bottom: 1px solid #aaa;
+    }
+
+    #keyPad a:hover { background: #eaeaea; }
+
+    /* Enter button */
+    #keyPad #keyPad_btnEnter {
+      background: #2ecc71;
+      border-color: #27ae60;
+      color: #fff;
+      font-size: 18px;
+      line-height: 20px;
+      width: 35px;
+      height: 25px;
+      position: static;
+    }
+
+    /* Clear / backspace buttons */
+    #keyPad #keyPad_btnBack {
+      background: #e74c3c;
+      color: #fff;
+      border-color: #c0392b;
+      width: 76px !important;
+    }
+
+    #keyPad #keyPad_btnAllClr,
+    #keyPad #keyPad_btnInverseSign {
+      background: #e74c3c;
+      color: #fff;
+      border-color: #c0392b;
+      width: 35px !important;
+    }
+
+    /* Memory buttons */
+    #keyPad a.keyPad_btnMemoryOp {
+      background: #8e44ad;
+      color: #fff;
+      border-color: #6c3483;
+    }
+
+    #keyPad a.keyPad_btnMemoryOp:hover { background: #7d3c98; }
+
+    /* Degree/Radian */
+    .degree_radian {
+      float: left;
+      height: 42px;
+      width: 80px;
+      display: inline-block;
+      font-size: 9px;
+      margin-top: 2px;
+      vertical-align: middle;
+      line-height: 1.6;
+    }
+
+    /* Special widths */
+    #keyPad_btn0 { width: 76px !important; }
+    #keyPad_btnDot { width: 35px !important; }
+
+    /* Arrow button */
+    .calc_arrows { font-size: 20px !important; }
+
+    /* Superscript / subscript */
+    .superscript, .subscript {
+      font-size: 0.7em;
+      position: relative;
+      top: -0.5em;
+    }
+    .subscript { top: 0.5em; }
+
+    /* Help panel */
+    #helpContent {
+      height: 270px;
+      overflow: auto;
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    #helpContent h3 { margin: 6px 0 4px; }
+    #helpContent ul { margin: 0 0 6px 16px; padding: 0; }
+    #helpContent li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div id="keyPad" class="calc_container">
+    <!-- Header -->
+    <div id="helptopDiv">
+      <span>Scientific Calculator</span>
+      <div id="keyPad_Help">Help?</div>
+      <div id="keyPad_Helpback" class="hide">Keypad</div>
+      <div class="calc_min" id="calc_min" title="Minimize">&#8722;</div>
+    </div>
+
+    <!-- Main content -->
+    <div id="mainContentArea">
+      <!-- Expression display -->
+      <input type="text" id="keyPad_UserInput1" class="keyPad_TextBox1" readonly />
+      <!-- Result display -->
+      <div class="text_container">
+        <input type="text" id="keyPad_UserInput" class="keyPad_TextBox" readonly />
+        <span id="memory" class="memoryhide">M</span>
+      </div>
+      <div class="clear"></div>
+
+      <div class="left_sec">
+        <!-- Row 1: mod, deg/rad, memory -->
+        <div class="calc_row clear">
+          <a href="#nogo" id="keyPad_btnMod"  class="keyPad_btnBinaryOp">mod</a>
+          <div class="degree_radian">
+            <input type="radio" name="degree_or_radian" value="deg" checked /> Deg<br />
+            <input type="radio" name="degree_or_radian" value="rad" /> Rad
+          </div>
+          <a href="#nogo" id="keyPad_MC"  class="keyPad_btnMemoryOp">MC</a>
+          <a href="#nogo" id="keyPad_MR"  class="keyPad_btnMemoryOp">MR</a>
+          <a href="#nogo" id="keyPad_MS"  class="keyPad_btnMemoryOp">MS</a>
+          <a href="#nogo" id="keyPad_M+"  class="keyPad_btnMemoryOp">M+</a>
+          <a href="#nogo" id="keyPad_M-"  class="keyPad_btnMemoryOp">M&#8722;</a>
+        </div>
+
+        <!-- Row 2: hyp, exp, parens, back, C, +/-, sqrt -->
+        <div class="calc_row clear">
+          <a href="#nogo" id="keyPad_btnSinH"   class="keyPad_btnUnaryOp min">sinh</a>
+          <a href="#nogo" id="keyPad_btnCosinH" class="keyPad_btnUnaryOp min">cosh</a>
+          <a href="#nogo" id="keyPad_btnTgH"    class="keyPad_btnUnaryOp min">tanh</a>
+          <a href="#nogo" id="keyPad_EXP"       class="keyPad_btnBinaryOp">Exp</a>
+          <a href="#nogo" id="keyPad_btnOpen"   class="keyPad_btnBinaryOp">(</a>
+          <a href="#nogo" id="keyPad_btnClose"  class="keyPad_btnBinaryOp">)</a>
+          <a href="#nogo" id="keyPad_btnBack"   class="keyPad_btnCommand calc_arrows">&#8592;</a>
+          <a href="#nogo" id="keyPad_btnAllClr" class="keyPad_btnCommand">C</a>
+          <a href="#nogo" id="keyPad_btnInverseSign" class="keyPad_btnUnaryOp">+/&#8722;</a>
+          <a href="#nogo" id="keyPad_btnSquareRoot" class="keyPad_btnUnaryOp">&#8730;</a>
+        </div>
+
+        <!-- Row 3: inv-hyp, log2, ln, log, 7 8 9 / % -->
+        <div class="calc_row clear" style="margin-top:5px;">
+          <a href="#nogo" id="keyPad_btnAsinH" class="keyPad_btnUnaryOp min"><span class="baseele">sinh</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnAcosH" class="keyPad_btnUnaryOp min"><span class="baseele">cosh</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnAtanH" class="keyPad_btnUnaryOp min"><span class="baseele">tanh</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnLogBase2" class="keyPad_btnUnaryOp"><span class="baseele">log</span><span class="subscript">2</span></a>
+          <a href="#nogo" id="keyPad_btnLn"  class="keyPad_btnUnaryOp">ln</a>
+          <a href="#nogo" id="keyPad_btnLg"  class="keyPad_btnUnaryOp">log</a>
+          <a href="#nogo" id="keyPad_btn7"   class="keyPad_btnNumeric">7</a>
+          <a href="#nogo" id="keyPad_btn8"   class="keyPad_btnNumeric">8</a>
+          <a href="#nogo" id="keyPad_btn9"   class="keyPad_btnNumeric">9</a>
+          <a href="#nogo" id="keyPad_btnDiv" class="keyPad_btnBinaryOp">/</a>
+          <a href="#nogo" id="keyPad_%" class="keyPad_btnBinaryOp">%</a>
+        </div>
+
+        <!-- Row 4: pi, e, n!, logy(x), e^x, 10^x, 4 5 6 * 1/x -->
+        <div class="calc_row clear">
+          <a href="#nogo" id="keyPad_btnPi"   class="keyPad_btnConst">&#960;</a>
+          <a href="#nogo" id="keyPad_btnE"    class="keyPad_btnConst">e</a>
+          <a href="#nogo" id="keyPad_btnFact" class="keyPad_btnUnaryOp">n!</a>
+          <a href="#nogo" id="keyPad_btnYlogX" class="keyPad_btnBinaryOp"><span class="baseele">log</span><span class="subscript">y</span><span class="baseele">x</span></a>
+          <a href="#nogo" id="keyPad_btnExp"  class="keyPad_btnUnaryOp"><span class="baseele">e</span><span class="superscript">x</span></a>
+          <a href="#nogo" id="keyPad_btn10X"  class="keyPad_btnUnaryOp"><span class="baseele">10</span><span class="superscript">x</span></a>
+          <a href="#nogo" id="keyPad_btn4"    class="keyPad_btnNumeric">4</a>
+          <a href="#nogo" id="keyPad_btn5"    class="keyPad_btnNumeric">5</a>
+          <a href="#nogo" id="keyPad_btn6"    class="keyPad_btnNumeric">6</a>
+          <a href="#nogo" id="keyPad_btnMult" class="keyPad_btnBinaryOp" style="font-size:18px;">&#215;</a>
+          <a href="#nogo" id="keyPad_btnInverse" class="keyPad_btnUnaryOp">1/x</a>
+        </div>
+
+        <!-- Row 5: trig, x^y, x^3, x^2, 1 2 3 - -->
+        <div class="calc_row clear">
+          <a href="#nogo" id="keyPad_btnSin"   class="keyPad_btnUnaryOp min">sin</a>
+          <a href="#nogo" id="keyPad_btnCosin" class="keyPad_btnUnaryOp min">cos</a>
+          <a href="#nogo" id="keyPad_btnTg"    class="keyPad_btnUnaryOp min">tan</a>
+          <a href="#nogo" id="keyPad_btnYpowX" class="keyPad_btnBinaryOp"><span class="baseele">x</span><span class="superscript">y</span></a>
+          <a href="#nogo" id="keyPad_btnCube"  class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">3</span></a>
+          <a href="#nogo" id="keyPad_btnSquare" class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">2</span></a>
+          <a href="#nogo" id="keyPad_btn1"     class="keyPad_btnNumeric">1</a>
+          <a href="#nogo" id="keyPad_btn2"     class="keyPad_btnNumeric">2</a>
+          <a href="#nogo" id="keyPad_btn3"     class="keyPad_btnNumeric">3</a>
+          <a href="#nogo" id="keyPad_btnMinus" class="keyPad_btnBinaryOp" style="font-size:18px;">&#8722;</a>
+        </div>
+
+        <!-- Row 6: inv-trig, yroot, cuberoot, |x|, 0 . + = -->
+        <div class="calc_row clear">
+          <a href="#nogo" id="keyPad_btnAsin" class="keyPad_btnUnaryOp min"><span class="baseele">sin</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnAcos" class="keyPad_btnUnaryOp min"><span class="baseele">cos</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnAtan" class="keyPad_btnUnaryOp min"><span class="baseele">tan</span><span class="superscript">-1</span></a>
+          <a href="#nogo" id="keyPad_btnYrootX" class="keyPad_btnBinaryOp"><span class="superscript" style="top:-8px;">y</span><span class="baseele" style="font-size:1.2em;margin:-6px 0 0 -9px;">&#8730;x</span></a>
+          <a href="#nogo" id="keyPad_btnCubeRoot" class="keyPad_btnUnaryOp" style="font-size:16px;">&#8731;</a>
+          <a href="#nogo" id="keyPad_btnAbs"  class="keyPad_btnUnaryOp">|x|</a>
+          <a href="#nogo" id="keyPad_btn0"    class="keyPad_btnNumeric">0</a>
+          <a href="#nogo" id="keyPad_btnDot"  class="keyPad_btnNumeric">.</a>
+          <a href="#nogo" id="keyPad_btnPlus" class="keyPad_btnBinaryOp" style="font-size:18px;">+</a>
+          <a href="#nogo" id="keyPad_btnEnter" class="keyPad_btnCommand">=</a>
+        </div>
+      </div>
+      <div class="clear"></div>
+
+      <!-- Help panel -->
+      <div id="helpContent" style="display:none;">
+        <h3 style="text-align:center;"><strong>Calculator Instructions</strong></h3>
+        <p>Allows you to perform basic and complex mathematical operations such as modulus, square root, cube root,
+           trigonometric, exponential, logarithmic, and hyperbolic functions.</p>
+        <h3 style="text-decoration:underline; color:green;">Do's:</h3>
+        <ul>
+          <li>Press <strong>[C]</strong> when beginning a new calculation.</li>
+          <li>Simplify an equation using parentheses and mathematical operators.</li>
+          <li>Use predefined constants such as <strong>&#960;</strong> (Pi) and <strong>e</strong> to save time.</li>
+          <li>Use memory functions for cumulative totals:
+            <br/><strong>[M+]</strong> adds displayed value to memory.
+            <br/><strong>[MR]</strong> recalls value from memory.
+            <br/><strong>[M-]</strong> subtracts displayed value from memory.
+          </li>
+          <li>Select angle unit (Deg or Rad) <em>before</em> any trigonometric calculation.</li>
+          <li><strong>Note:</strong> Default angle unit is Degree.</li>
+        </ul>
+        <h3 style="text-decoration:underline; color:red;">Don'ts:</h3>
+        <ul>
+          <li>Do not perform multiple operations simultaneously.</li>
+          <li>Do not leave parentheses unbalanced.</li>
+          <li>Do not change the angle unit while performing a calculation.</li>
+        </ul>
+        <h3 style="text-decoration:underline;">Limitations:</h3>
+        <ul>
+          <li>Keyboard input is disabled; use on-screen buttons only.</li>
+          <li>Factorial output is precise up to 14 digits.</li>
+          <li>Logarithmic and hyperbolic outputs are precise up to 5 digits.</li>
+          <li>Modulus on decimals with 15+ digits may not be precise.</li>
+          <li>Supported value range: 10<sup>-323</sup> to 10<sup>308</sup>.</li>
+        </ul>
+      </div>
+    </div><!-- /mainContentArea -->
+  </div><!-- /keyPad -->
+
+  <script>
+    // =====================================================================
+    //  STATE
+    // =====================================================================
+    var strNaN       = 'NaN';
+    var strInf       = 'Infinity';
+    var strMathError = 'Math Error';
+    var strEmpty     = 0;
+    var maxLength    = 8;
+
+    var opCodeArray  = [];
+    var stackArray   = [];
+    var openArray    = [];
+    var opCode       = 0;
+    var stackVal     = 0;
+    var memVal       = 0;
+    var boolClear    = true;
+    var newOpCode    = 0;
+    var modeSelected = 'deg';
+    var displayString = '';
+    var trigDisplay  = '';
+    var memory       = 0;
+    var trig         = 0;
+    var stackVal1    = 1;
+    var stackVal2    = 0;
+
+    // =====================================================================
+    //  HELPERS
+    // =====================================================================
+    function $(id) { return document.getElementById(id); }
+
+    function inBox()  { return $('keyPad_UserInput'); }
+    function inBox1() { return $('keyPad_UserInput1'); }
+
+    function getMode() {
+      var radios = document.querySelectorAll('input[name=degree_or_radian]');
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) return radios[i].value;
+      }
+      return 'deg';
+    }
+
+    function changeXBasedOnMode(mode, v) {
+      return mode === 'deg' ? v * (Math.PI / 180) : v;
+    }
+
+    function changeValOfInvBasedOnMode(mode, v) {
+      return mode === 'deg' ? (180 / Math.PI) * v : v;
+    }
+
+    function nthroot(x, n) {
+      var neg = n % 2 === 1 && x < 0;
+      if (neg) x = -x;
+      var r = Math.pow(x, 1 / n);
+      return neg ? -r : r;
+    }
+
+    function factorial(n) {
+      if (n > 170) return strInf;
+      if (n < 0)   return strMathError;
+      if (n === 0 || n === 1) return 1;
+      if (n % 1 !== 0) return gamma(n + 1);
+      return n * factorial(n - 1);
+    }
+
+    function gamma(n) {
+      var g = 7,
+          p = [0.99999999999980993,676.5203681218851,-1259.1392167224028,
+               771.32342877765313,-176.61502916214059,12.507343278686905,
+               -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+      if (n < 0.5) return Math.PI / Math.sin(n * Math.PI) / gamma(1 - n);
+      n--;
+      var x = p[0];
+      for (var i = 1; i < g + 2; i++) x += p[i] / (n + i);
+      var t = n + g + 0.5;
+      return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
+    }
+
+    function inverseSineH(v) {
+      return Math.log(v + Math.sqrt(v * v + 1));
+    }
+
+    function tanCalc(mode, v) {
+      var ip = changeXBasedOnMode(mode, v);
+      if (ip % (Math.PI / 2) === 0) {
+        return (ip / (Math.PI / 2)) % 2 === 0 ? '0' : strMathError;
+      }
+      return Math.tan(ip);
+    }
+
+    function cosCalc(mode, v) {
+      var ip = changeXBasedOnMode(mode, v);
+      if ((ip.toFixed(8) % (Math.PI / 2).toFixed(8)) === 0) {
+        return ((ip.toFixed(8) / (Math.PI / 2)).toFixed(8) % 2) === 0
+          ? Math.cos(ip) : '0';
+      }
+      return Math.cos(ip);
+    }
+
+    function sinCalc(mode, v) {
+      var ip = changeXBasedOnMode(mode, v);
+      return parseFloat((ip.toFixed(8) % Math.PI).toFixed(8)) === 0
+        ? '0' : Math.sin(ip);
+    }
+
+    function cotCalc(mode, v) {
+      var t = tanCalc(mode, v);
+      if (t === 0)           return strMathError;
+      if (t === strMathError) return '0';
+      return 1 / t;
+    }
+
+    function secCalc(mode, v) {
+      var c = cosCalc(mode, v);
+      return parseFloat(c.toFixed(8)) === 0 ? strMathError : 1 / c;
+    }
+
+    function cosecCalc(mode, v) {
+      var s = sinCalc(mode, v);
+      return parseFloat(s.toFixed(8)) === 0 ? strMathError : 1 / s;
+    }
+
+    function sinInvCalc(mode, v) {
+      var ip = Math.asin(v);
+      if (isNaN(ip)) return strMathError;
+      return changeValOfInvBasedOnMode(mode, ip);
+    }
+
+    function cosInvCalc(mode, v) {
+      var ip = Math.acos(v);
+      if (isNaN(ip)) return strMathError;
+      return changeValOfInvBasedOnMode(mode, ip);
+    }
+
+    function tanInvCalc(mode, v) {
+      var ip = Math.atan(v);
+      if (isNaN(ip)) return strMathError;
+      return changeValOfInvBasedOnMode(mode, ip);
+    }
+
+    // =====================================================================
+    //  DISPLAY HELPERS
+    // =====================================================================
+    function formatResult(retVal) {
+      if (retVal === 0 || retVal === -0)                             return 0;
+      if (retVal === strMathError || retVal === strInf)              return retVal;
+      if (Math.abs(retVal) < 0.00000001 || Math.abs(retVal) > 1e8)  return retVal;
+      if (retVal.toFixed(8) % 1 !== 0) {
+        for (var i = 1; i < 10; i++) {
+          if (retVal.toFixed(i) != 0 &&
+              retVal.toFixed(i) / retVal.toFixed(i + 8) == 1) {
+            return retVal.toFixed(i);
+          }
+        }
+        return retVal;
+      }
+      return retVal.toFixed(0);
+    }
+
+    function modeText(text, x) {
+      var mode = modeSelected !== 'deg' ? 'r' : 'd';
+      displayTrignometric(text + mode, x);
+    }
+
+    function displayTrignometric(text, x) {
+      if (stackVal2 === 1) {
+        var string = '';
+        for (var i = openArray.length; i >= 0; i--) {
+          string += displayString.substring(0, displayString.lastIndexOf('(') + 1);
+          displayString = displayString.replace(string, '');
+        }
+        displayString = string.substring(0, string.lastIndexOf('('));
+        trigDisplay = text + '(' + x + ')';
+      }
+      if (stackVal2 === 2 || stackVal1 === 3) {
+        if (stackVal2 === 3) { trigDisplay = text + '(' + x + ')'; stackVal2 = 2; }
+        else {
+          displayString = displayString.replace(trigDisplay, '');
+          trigDisplay = text + '(' + trigDisplay + ')';
+        }
+      } else {
+        if (stackVal2 === 4) displayString = '';
+        trigDisplay = text + '(' + x + ')';
+      }
+      displayString += trigDisplay;
+    }
+
+    function displayCheck() {
+      switch (stackVal1) {
+        case 2:
+          inBox1().value = '';
+          break;
+        case 3:
+          inBox1().value = inBox1().value.substring(0, inBox1().value.length - trigDisplay.length);
+          stackVal2 = 4;
+          break;
+        case 5:
+          var s = '';
+          for (var i = openArray.length; i >= 0; i--) {
+            s += displayString.substring(0, displayString.indexOf('(') + 1);
+            displayString = displayString.replace(s, '');
+          }
+          displayString = s.substring(0, s.lastIndexOf('('));
+          inBox1().value = displayString;
+          stackVal2 = 6;
+          break;
+      }
+    }
+
+    function stackCheck(text) {
+      if (stackVal1 === 2) { inBox1().value = ''; }
+      if (stackVal1 === 0) {
+        opCode = 0;
+        var x = 1;
+        switch (newOpCode) {
+          case 5: x = 3; break;
+          case 7: x = 5; break;
+          case 8: x = 9; break;
+        }
+        if (inBox1().value.indexOf('e+') === -1)
+          inBox1().value = inBox1().value.substring(0, inBox1().value.length - x);
+        stackVal2 = 2;
+      }
+      if (stackVal1 === 5 || stackVal2 === 2) {
+        stackVal2 = 0;
+        displayString = inBox1().value + text;
+      } else {
+        var v = inBox1().value;
+        if (v.indexOf('e+0') > -1 && inBox().value.indexOf('-') > -1)
+          inBox1().value = v.replace('e+0', 'e');
+        else if (v.indexOf('e+0') > -1)
+          inBox1().value = v.replace('e+0', 'e+');
+        displayString = inBox1().value + inBox().value + text;
+      }
+    }
+
+    function opcodeChange() {
+      if (opCode !== 10 && opCode !== 0) {
+        opCodeArray.push(opCode);
+        stackArray.push(stackVal);
+      }
+      if (opCode === 0) stackArray.push(stackVal);
+      opCode = 0;
+    }
+
+    function operationLoop() {
+      while (opCodeArray.length && opCode) {
+        if (opCode === 10) {
+          opCode = opCodeArray[opCodeArray.length - 1];
+          stackVal = stackArray[stackArray.length - 1];
+          if (newOpCode === 1 || newOpCode === 2 || newOpCode <= opCode) {
+            opCodeArray.pop(); stackArray.pop();
+          } else { opCode = 0; break; }
+        } else if (stackArray[stackArray.length - 1] === '{') {
+          break;
+        } else {
+          oscBinaryOperation();
+          stackVal = stackArray[stackArray.length - 1];
+          if (stackVal === '{') { opCode = 0; break; }
+          opCode = opCodeArray[opCodeArray.length - 1];
+          if (newOpCode === 1 || newOpCode === 2 || newOpCode <= opCode) {
+            opCodeArray.pop(); stackArray.pop();
+          } else { opCode = 0; break; }
+          if (!opCodeArray.length && stackArray.length && stackArray[stackArray.length - 1] !== '{')
+            stackVal = stackArray[stackArray.length - 1];
+        }
+      }
+    }
+
+    function oscBinaryOperation() {
+      var x2 = parseFloat(inBox().value);
+      switch (opCode) {
+        case 9:  stackVal = parseFloat(stackVal) * Math.pow(10, x2); break;
+        case 1:  stackVal += x2; break;
+        case 2:  stackVal -= x2; break;
+        case 3:  stackVal *= x2; break;
+        case 4:  stackVal /= x2; break;
+        case 5:  stackVal = stackVal % x2; break;
+        case 6:
+          var pc = stackVal;
+          stackVal = Math.pow(stackVal, x2);
+          if (pc === 10 && stackVal % 10 !== 0 &&
+              (Math.abs(stackVal) < 0.00000001 || Math.abs(stackVal) > 1e8) &&
+              x2 % 1 === 0)
+            stackVal = parseFloat(stackVal.toPrecision(7));
+          break;
+        case 7:  stackVal = nthroot(stackVal, x2); break;
+        case 8:  stackVal = Math.log(stackVal) / Math.log(x2); break;
+        case 11: stackVal = stackVal / 100 * x2; break;
+        default: stackVal = x2; break;
+      }
+      inBox().value = formatResult(stackVal);
+      boolClear = true;
+      trig = 0;
+    }
+
+    // =====================================================================
+    //  UI: HELP / MINIMIZE
+    // =====================================================================
+    $('keyPad_Help').addEventListener('click', function () {
+      this.classList.add('hide');
+      $('keyPad_Helpback').classList.remove('hide');
+      $('mainContentArea').querySelectorAll('.left_sec, .text_container, #keyPad_UserInput1')
+        .forEach(function (el) { el.style.display = 'none'; });
+      $('helpContent').style.display = 'block';
+    });
+
+    $('keyPad_Helpback').addEventListener('click', function () {
+      this.classList.add('hide');
+      $('keyPad_Help').classList.remove('hide');
+      $('mainContentArea').querySelectorAll('.left_sec, .text_container')
+        .forEach(function (el) { el.style.display = ''; });
+      $('keyPad_UserInput1').style.display = '';
+      $('helpContent').style.display = 'none';
+    });
+
+    $('calc_min').addEventListener('click', function () {
+      var content = $('mainContentArea');
+      if (content.style.display === 'none') {
+        content.style.display = '';
+        this.textContent = '\u2212';
+        this.title = 'Minimize';
+      } else {
+        content.style.display = 'none';
+        this.textContent = '+';
+        this.title = 'Restore';
+      }
+    });
+
+    // Mode radio change
+    document.querySelectorAll('input[name=degree_or_radian]').forEach(function (r) {
+      r.addEventListener('change', function () { modeSelected = getMode(); });
+    });
+
+    // =====================================================================
+    //  NUMERIC BUTTONS
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnNumeric').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var btnVal = this.textContent.trim();
+        var box = inBox(), box1 = inBox1();
+        if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+        if (boolClear) { box.value = strEmpty; boolClear = false; }
+        var str = box.value;
+        if (str.length > maxLength) return;
+        if (this.id === 'keyPad_btnDot' && str.indexOf('.') >= 0 && box1.value !== '') {
+          box.value = strEmpty + '.'; box1.value = ''; return;
+        }
+        if (this.id === 'keyPad_btnDot' && str.indexOf('.') >= 0) return;
+        displayCheck();
+        if (str != strEmpty || str.length > 1 || this.id === 'keyPad_btnDot') {
+          box.value = str + btnVal;
+        } else {
+          box.value = btnVal;
+        }
+        stackVal1 = 1;
+      });
+    });
+
+    // =====================================================================
+    //  CONSTANT BUTTONS
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnConst').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var retVal = strEmpty;
+        if (inBox().value.indexOf('Infinity') > -1 || inBox().value.indexOf(strMathError) > -1) return;
+        switch (this.id) {
+          case 'keyPad_btnPi': retVal = Math.PI; break;
+          case 'keyPad_btnE':  retVal = Math.E;  break;
+        }
+        displayCheck();
+        stackVal1 = 1;
+        boolClear = true;
+        inBox().value = retVal;
+      });
+    });
+
+    // =====================================================================
+    //  BINARY OPERATION BUTTONS
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnBinaryOp').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var box = inBox(), box1 = inBox1();
+        if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+
+        switch (this.id) {
+          case 'keyPad_btnPlus':
+            stackCheck('+'); newOpCode = 1;
+            if (opCode === 10 && stackArray.length && stackArray[stackArray.length-1] === '{') opcodeChange();
+            operationLoop(); stackVal1 = 0; break;
+
+          case 'keyPad_btnMinus':
+            stackCheck('-'); newOpCode = 2;
+            if (opCode === 10 && stackArray.length && stackArray[stackArray.length-1] === '{') opcodeChange();
+            operationLoop(); stackVal1 = 0; break;
+
+          case 'keyPad_btnMult':
+            stackCheck('*'); newOpCode = 3;
+            if (opCode === 1 || opCode === 2) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 3 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_btnDiv':
+            stackCheck('/'); newOpCode = 4;
+            if (opCode < 4 && opCode) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 4 || stackVal1 === 5 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_%':
+            stackCheck('%'); newOpCode = 11;
+            if (opCode < 6 && opCode) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 6 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_EXP':
+            stackCheck('e+0'); newOpCode = 9;
+            if (opCode < 6 && opCode) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 6 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 1; stackVal2 = 7; break;
+
+          case 'keyPad_btnYpowX':
+            stackCheck('^'); newOpCode = 6;
+            if (opCode < 6 && opCode) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 6 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_btnMod':
+            stackCheck('mod'); newOpCode = 5;
+            if (opCode === 1 || opCode === 2) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] === 1 || 2 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_btnYrootX':
+            stackCheck('yroot'); newOpCode = 7;
+            if (opCode < 6 && opCode) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 6 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_btnYlogX':
+            stackCheck('logxBasey'); newOpCode = 8;
+            if (opCode === 1 || opCode === 2) opcodeChange();
+            if (opCode === 10) {
+              if (opCodeArray[opCodeArray.length-1] < 3 || (stackArray.length && stackArray[stackArray.length-1] === '{')) opcodeChange();
+              else operationLoop();
+            }
+            stackVal1 = 0; break;
+
+          case 'keyPad_btnOpen':
+            displayString = box1.value + '(';
+            newOpCode = 0; box.value = 0;
+            if (opCode !== 0) opcodeChange();
+            openArray.push('{'); stackArray.push('{'); stackVal1 = 1; break;
+
+          case 'keyPad_btnClose':
+            if (stackVal2 === 6) {
+              stackVal = parseFloat(box.value);
+              displayString = box1.value + box.value + ')';
+            } else if (newOpCode !== 10) {
+              if (stackVal1 !== 3) {
+                var v = box1.value;
+                if (v.indexOf('e+0') > -1 && box.value.indexOf('-') > -1)
+                  box1.value = v.replace('e+0', 'e');
+                else if (v.indexOf('e+0') > -1)
+                  box1.value = v.replace('e+0', 'e+');
+                displayString = box1.value + box.value + ')';
+              } else { displayString = box1.value + ')'; }
+            } else { displayString = box1.value + ')'; }
+
+            if (openArray.length) {
+              openArray.pop(); newOpCode = 10;
+              while (opCodeArray.length || openArray.length) {
+                if (stackArray[stackArray.length-1] === '{') { stackArray.pop(); break; }
+                else {
+                  oscBinaryOperation();
+                  stackVal = stackArray[stackArray.length-1];
+                  if (stackVal === '{') { stackArray.pop(); opCode = 0; break; }
+                  stackArray.pop();
+                  opCode = opCodeArray[opCodeArray.length-1];
+                  opCodeArray.pop();
+                  if (!opCodeArray.length && stackArray.length && stackArray[stackArray.length-1] !== '{')
+                    stackVal = stackArray[stackArray.length-1];
+                }
+              }
+            } else { return; }
+            stackVal2 = 1; stackVal1 = 5; break;
+        }
+
+        if (opCode) oscBinaryOperation();
+        else { stackVal = parseFloat(box.value); boolClear = true; }
+        opCode = newOpCode;
+        box1.value = displayString;
+      });
+    });
+
+    // =====================================================================
+    //  MEMORY BUTTONS
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnMemoryOp').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var box = inBox();
+        var x = parseFloat(box.value) || 0;
+        var retVal;
+        if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+        switch (this.id) {
+          case 'keyPad_MS':
+            memory = x; showMem(true); retVal = box.value; break;
+          case 'keyPad_M+':
+            memory = x + parseFloat(memory); showMem(true); retVal = box.value; break;
+          case 'keyPad_MR':
+            retVal = parseFloat(memory); stackVal1 = 1; break;
+          case 'keyPad_MC':
+            memory = 0; showMem(false); retVal = box.value; break;
+          case 'keyPad_M-':
+            showMem(true); memory = parseFloat(memory) - x; retVal = box.value; break;
+        }
+        box.value = (retVal != strEmpty) ? retVal : retVal;
+        boolClear = true;
+      });
+    });
+
+    function showMem(show) {
+      var m = $('memory');
+      if (show) { m.classList.add('memoryshow'); m.classList.remove('memoryhide'); }
+      else       { m.classList.remove('memoryshow'); m.classList.add('memoryhide'); }
+    }
+
+    // =====================================================================
+    //  UNARY BUTTONS
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnUnaryOp').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        modeSelected = getMode();
+        var box = inBox(), x = parseFloat(box.value);
+        var retVal;
+        if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+
+        switch (this.id) {
+          case 'keyPad_btnInverseSign':
+            retVal = -x; trig = 1; stackVal2 = 3; break;
+          case 'keyPad_btnInverse':
+            retVal = 1 / x; displayTrignometric('reciproc', x); break;
+          case 'keyPad_btnSquare':
+            retVal = x * x; displayTrignometric('sqr', x); break;
+          case 'keyPad_btnSquareRoot':
+            retVal = Math.sqrt(x); displayTrignometric('sqrt', x); break;
+          case 'keyPad_btnCube':
+            retVal = x * x * x; displayTrignometric('cube', x); break;
+          case 'keyPad_btnCubeRoot':
+            retVal = nthroot(x, 3); displayTrignometric('cuberoot', x); break;
+          case 'keyPad_btnLn':
+            retVal = Math.log(x); displayTrignometric('ln', x); break;
+          case 'keyPad_btnLg':
+            retVal = Math.log(x) / Math.LN10; displayTrignometric('log', x); break;
+          case 'keyPad_btnExp':
+            retVal = Math.exp(x); displayTrignometric('powe', x); break;
+          case 'keyPad_btnSin':
+            retVal = sinCalc(modeSelected, x); modeText('sin', x); trig = 1; break;
+          case 'keyPad_btnCosin':
+            retVal = cosCalc(modeSelected, x); modeText('cos', x); trig = 1; break;
+          case 'keyPad_btnTg':
+            retVal = tanCalc(modeSelected, x); modeText('tan', x); trig = 1; break;
+          case 'keyPad_btnFact':
+            retVal = factorial(x); displayTrignometric('fact', x); break;
+          case 'keyPad_btn10X':
+            retVal = Math.pow(10, x);
+            if (retVal % 10 !== 0 && (Math.abs(retVal) < 0.00000001 || Math.abs(retVal) > 1e8) && x % 1 === 0)
+              retVal = parseFloat(retVal.toPrecision(7));
+            displayTrignometric('powten', x); break;
+          case 'keyPad_btnAsinH':
+            retVal = inverseSineH(x); modeText(this.textContent.trim(), x); break;
+          case 'keyPad_btnAcosH':
+            retVal = Math.log(x + Math.sqrt(x + 1) * Math.sqrt(x - 1)); modeText(this.textContent.trim(), x); break;
+          case 'keyPad_btnAtanH':
+            retVal = 0.5 * (Math.log(1 + x) - Math.log(1 - x)); modeText(this.textContent.trim(), x); break;
+          case 'keyPad_btnAbs':
+            retVal = Math.abs(x); displayTrignometric('abs', x); break;
+          case 'keyPad_btnLogBase2':
+            retVal = Math.log(x) / Math.log(2); displayTrignometric('logXbase2', x); break;
+          case 'keyPad_btnAsin':
+            retVal = sinInvCalc(modeSelected, x); modeText('asin', x); trig = 1; break;
+          case 'keyPad_btnAcos':
+            retVal = cosInvCalc(modeSelected, x); modeText('acos', x); trig = 1; break;
+          case 'keyPad_btnAtan':
+            retVal = tanInvCalc(modeSelected, x); modeText('atan', x); trig = 1; break;
+          case 'keyPad_btnSinH':
+            retVal = (Math.pow(Math.E, x) - Math.pow(Math.E, -x)) / 2; modeText(this.textContent.trim(), x); break;
+          case 'keyPad_btnCosinH':
+            retVal = (Math.pow(Math.E, x) + Math.pow(Math.E, -x)) / 2; modeText(this.textContent.trim(), x); break;
+          case 'keyPad_btnTgH':
+            retVal = (Math.pow(Math.E, x) - Math.pow(Math.E, -x)) / (Math.pow(Math.E, x) + Math.pow(Math.E, -x));
+            modeText(this.textContent.trim(), x); break;
+        }
+
+        if (stackVal2 === 1) stackVal = retVal;
+        if (stackVal2 !== 3) stackVal2 = 2;
+        stackVal1 = 3;
+        boolClear = true;
+
+        if (retVal === 0 || retVal === strMathError || retVal === strInf) {
+          box.value = retVal;
+        } else {
+          var f = formatResult(retVal);
+          box.value = (f === -0) ? 0 : f;
+        }
+        trig = 0;
+        inBox1().value = displayString;
+      });
+    });
+
+    // =====================================================================
+    //  COMMAND BUTTONS (Enter / Back / C)
+    // =====================================================================
+    document.querySelectorAll('#keyPad a.keyPad_btnCommand').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var box = inBox(), box1 = inBox1();
+        var strInput = box.value;
+
+        switch (this.id) {
+          case 'keyPad_btnEnter':
+            if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+            while (opCode || opCodeArray.length) {
+              if (stackArray[stackArray.length-1] === '{') stackArray.pop();
+              oscBinaryOperation();
+              stackVal = stackArray[stackArray.length-1];
+              opCode   = opCodeArray[opCodeArray.length-1];
+              stackArray.pop(); opCodeArray.pop();
+            }
+            opCode = 0; displayString = ''; trigDisplay = ''; stackVal = strEmpty; openArray = [];
+            if (stackVal1 !== 2) {
+              if (stackVal1 === 3 || stackVal2 === 1) {
+                if (stackVal2 !== 3) strInput = '';
+              }
+              if (newOpCode === 9) {
+                if (strInput.indexOf('-') > -1) box1.value = box1.value.substring(0, box1.value.lastIndexOf('+'));
+                else box1.value = box1.value.replace('e+0', 'e+');
+              }
+              box1.value = box1.value + strInput;
+            }
+            stackVal1 = 2; newOpCode = 0; stackVal2 = 0; stackArray = []; opCodeArray = [];
+            return;
+
+          case 'keyPad_btnBack':
+            if (stackVal1 === 1 || stackVal2 === 3) {
+              if (box.value.indexOf('Infinity') > -1 || box.value.indexOf(strMathError) > -1) return;
+              if (strInput.length > 1) {
+                box.value = strInput.substring(0, strInput.length - 1);
+                if (box.value === '-') box.value = '0';
+              } else {
+                box.value = '0';
+              }
+            }
+            return;
+
+          case 'keyPad_btnAllClr':
+            box.value = strEmpty;
+            box1.value = '';
+            displayString = ''; trigDisplay = '';
+            stackArray = []; opCodeArray = []; openArray = [];
+            stackVal = strEmpty; stackVal1 = 1; stackVal2 = 0; newOpCode = 0; opCode = 0;
+            return;
+        }
+      });
+    });
+
+    // Prevent anchor navigation
+    document.querySelectorAll('#keyPad a').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); });
+    });
+
+    // =====================================================================
+    //  DRAGGABLE
+    // =====================================================================
+    (function () {
+      var el     = document.getElementById('keyPad');
+      var handle = document.getElementById('helptopDiv');
+      var dragging = false, ox, oy, sx, sy;
+
+      handle.style.cursor = 'move';
+
+      handle.addEventListener('mousedown', function (e) {
+        var tid = e.target.id;
+        if (tid === 'keyPad_Help' || tid === 'keyPad_Helpback' || tid === 'calc_min') return;
+        var rect = el.getBoundingClientRect();
+        ox = rect.left; oy = rect.top;
+        sx = e.clientX;  sy = e.clientY;
+        el.style.position = 'fixed';
+        el.style.left     = ox + 'px';
+        el.style.top      = oy + 'px';
+        el.style.margin   = '0';
+        dragging = true;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        el.style.left = (ox + e.clientX - sx) + 'px';
+        el.style.top  = (oy + e.clientY - sy) + 'px';
+      });
+
+      document.addEventListener('mouseup', function () { dragging = false; });
+    })();
+  </script>
+</body>
+</html>
