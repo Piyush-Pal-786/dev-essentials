@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/github/license/your-org/dev-essentials)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
-![Tools](https://img.shields.io/badge/tools-1-blue)
+![Tools](https://img.shields.io/badge/tools-2-blue)
 
 ---
 
@@ -42,6 +42,7 @@ This repository currently includes the following tools:
 | Tool | Folder | Description |
 | :--- | :--- | :--- |
 | **ASCII Tree Generator** | [`ascii-tree-generator/`](ascii-tree-generator/) | Converts an indented list into a formatted ASCII directory tree. Supports 6 styles, live search, 4 export formats, drag-and-drop import, and light/dark theme. |
+| **Scientific Gate Calculator** | [`gate-calculator/`](gate-calculator/) | A fully self-contained scientific calculator with arithmetic, trigonometric, logarithmic, hyperbolic, and power functions, memory operations, parentheses support, and a companion Scratch Pad. (`Helpful- For preparing GATE exams.`) |
 | **In-Browser Markdown Editor** | *(coming soon)* | A quick and easy way to edit Markdown files directly in your web browser without any installation. `work-in-progress` |
 | *...more to come!* | — | We are always looking to add more useful tools. |
 
@@ -58,6 +59,10 @@ dev-essentials
 │   ├── CHANGELOG.md
 │   ├── README.md
 │   └── ascii-tree-generator.html
+├── gate-calculator
+│   ├── CHANGELOG.md
+│   ├── README.md
+│   └── gate-calculator.html
 ├── CONTRIBUTING.md
 ├── README.md
 └── LICENSE
@@ -75,6 +80,10 @@ dev-essentials
 | `ascii-tree-generator/ascii-tree-generator.html` | App file | Single-file web app — open in any browser, no installation needed |
 | `ascii-tree-generator/README.md` | Documentation | Full feature guide, usage instructions, and use cases for this tool |
 | `ascii-tree-generator/CHANGELOG.md` | Changelog | Version history for the ASCII Tree Generator |
+| `gate-calculator/` | Tool folder | Self-contained folder for the Scientific Gate Calculator tool |
+| `gate-calculator/gate-calculator.html` | App file | Single-file web app — open in any browser, no installation needed |
+| `gate-calculator/README.md` | Documentation | Full feature guide, usage instructions, and limitations for this tool |
+| `gate-calculator/CHANGELOG.md` | Changelog | Version history for the Scientific Gate Calculator |
 | `CONTRIBUTING.md` | Guidelines | How to contribute: adding tools, code style, commit format, PR process |
 | `README.md` | Documentation | This file — project overview, quick start, tool index, and structure |
 | `LICENSE` | License | Open-source license governing use and distribution of the project |
