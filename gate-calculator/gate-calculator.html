@@ -181,16 +181,27 @@
 
     #keyPad a:hover { background: #eaeaea; }
 
-    /* Enter button */
+    /* Two-row wrapper for = button */
+    .rows-56-wrap {
+      position: relative;
+      padding-right: 40px;
+      overflow: hidden;
+    }
+
+    /* Enter button — spans rows 5 & 6 */
     #keyPad #keyPad_btnEnter {
       background: #2ecc71;
       border-color: #27ae60;
       color: #fff;
-      font-size: 18px;
-      line-height: 20px;
+      font-size: 22px;
+      line-height: 55px;
       width: 35px;
-      height: 25px;
-      position: static;
+      height: 55px;
+      position: absolute;
+      right: 0;
+      top: 0;
+      float: none;
+      margin-right: 0;
     }
 
     /* Clear / backspace buttons */
@@ -256,6 +267,62 @@
     #helpContent h3 { margin: 6px 0 4px; }
     #helpContent ul { margin: 0 0 6px 16px; padding: 0; }
     #helpContent li { margin-bottom: 4px; }
+
+    /* ── Scratch Pad ───────────────────────────────────── */
+    #scratchPad {
+      background: #fffde7;
+      border: 1px solid #f9a825;
+      border-radius: 5px;
+      border-bottom: 7px solid #f57f17;
+      width: 220px;
+      margin-left: 20px;
+      align-self: flex-start;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 15px 0 rgba(0,0,0,0.08) inset;
+      font-family: Arial, sans-serif;
+    }
+
+    #scratchPadHeader {
+      background: #f9a825;
+      color: #fff;
+      padding: 8px 10px;
+      border-radius: 4px 4px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: default;
+    }
+
+    #scratchClear {
+      background: #e65100;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    #scratchClear:hover { background: #bf360c; }
+
+    #scratchArea {
+      width: 100%;
+      min-height: 340px;
+      border: none;
+      background: transparent;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      border-radius: 0 0 4px 4px;
+      color: #333;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -338,31 +405,34 @@
           <a href="#nogo" id="keyPad_btnInverse" class="keyPad_btnUnaryOp">1/x</a>
         </div>
 
-        <!-- Row 5: trig, x^y, x^3, x^2, 1 2 3 - -->
-        <div class="calc_row clear">
-          <a href="#nogo" id="keyPad_btnSin"   class="keyPad_btnUnaryOp min">sin</a>
-          <a href="#nogo" id="keyPad_btnCosin" class="keyPad_btnUnaryOp min">cos</a>
-          <a href="#nogo" id="keyPad_btnTg"    class="keyPad_btnUnaryOp min">tan</a>
-          <a href="#nogo" id="keyPad_btnYpowX" class="keyPad_btnBinaryOp"><span class="baseele">x</span><span class="superscript">y</span></a>
-          <a href="#nogo" id="keyPad_btnCube"  class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">3</span></a>
-          <a href="#nogo" id="keyPad_btnSquare" class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">2</span></a>
-          <a href="#nogo" id="keyPad_btn1"     class="keyPad_btnNumeric">1</a>
-          <a href="#nogo" id="keyPad_btn2"     class="keyPad_btnNumeric">2</a>
-          <a href="#nogo" id="keyPad_btn3"     class="keyPad_btnNumeric">3</a>
-          <a href="#nogo" id="keyPad_btnMinus" class="keyPad_btnBinaryOp" style="font-size:18px;">&#8722;</a>
-        </div>
-
-        <!-- Row 6: inv-trig, yroot, cuberoot, |x|, 0 . + = -->
-        <div class="calc_row clear">
-          <a href="#nogo" id="keyPad_btnAsin" class="keyPad_btnUnaryOp min"><span class="baseele">sin</span><span class="superscript">-1</span></a>
-          <a href="#nogo" id="keyPad_btnAcos" class="keyPad_btnUnaryOp min"><span class="baseele">cos</span><span class="superscript">-1</span></a>
-          <a href="#nogo" id="keyPad_btnAtan" class="keyPad_btnUnaryOp min"><span class="baseele">tan</span><span class="superscript">-1</span></a>
-          <a href="#nogo" id="keyPad_btnYrootX" class="keyPad_btnBinaryOp"><span class="superscript" style="top:-8px;">y</span><span class="baseele" style="font-size:1.2em;margin:-6px 0 0 -9px;">&#8730;x</span></a>
-          <a href="#nogo" id="keyPad_btnCubeRoot" class="keyPad_btnUnaryOp" style="font-size:16px;">&#8731;</a>
-          <a href="#nogo" id="keyPad_btnAbs"  class="keyPad_btnUnaryOp">|x|</a>
-          <a href="#nogo" id="keyPad_btn0"    class="keyPad_btnNumeric">0</a>
-          <a href="#nogo" id="keyPad_btnDot"  class="keyPad_btnNumeric">.</a>
-          <a href="#nogo" id="keyPad_btnPlus" class="keyPad_btnBinaryOp" style="font-size:18px;">+</a>
+        <!-- Rows 5 & 6: = button spans both rows via absolute positioning -->
+        <div class="rows-56-wrap">
+          <!-- Row 5: trig, x^y, x^3, x^2, 1 2 3 - -->
+          <div class="calc_row clear">
+            <a href="#nogo" id="keyPad_btnSin"   class="keyPad_btnUnaryOp min">sin</a>
+            <a href="#nogo" id="keyPad_btnCosin" class="keyPad_btnUnaryOp min">cos</a>
+            <a href="#nogo" id="keyPad_btnTg"    class="keyPad_btnUnaryOp min">tan</a>
+            <a href="#nogo" id="keyPad_btnYpowX" class="keyPad_btnBinaryOp"><span class="baseele">x</span><span class="superscript">y</span></a>
+            <a href="#nogo" id="keyPad_btnCube"  class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">3</span></a>
+            <a href="#nogo" id="keyPad_btnSquare" class="keyPad_btnUnaryOp"><span class="baseele">x</span><span class="superscript">2</span></a>
+            <a href="#nogo" id="keyPad_btn1"     class="keyPad_btnNumeric">1</a>
+            <a href="#nogo" id="keyPad_btn2"     class="keyPad_btnNumeric">2</a>
+            <a href="#nogo" id="keyPad_btn3"     class="keyPad_btnNumeric">3</a>
+            <a href="#nogo" id="keyPad_btnMinus" class="keyPad_btnBinaryOp" style="font-size:18px;">&#8722;</a>
+          </div>
+          <!-- Row 6: inv-trig, yroot, cuberoot, |x|, 0 . + -->
+          <div class="calc_row clear" style="margin-bottom:0;">
+            <a href="#nogo" id="keyPad_btnAsin" class="keyPad_btnUnaryOp min"><span class="baseele">sin</span><span class="superscript">-1</span></a>
+            <a href="#nogo" id="keyPad_btnAcos" class="keyPad_btnUnaryOp min"><span class="baseele">cos</span><span class="superscript">-1</span></a>
+            <a href="#nogo" id="keyPad_btnAtan" class="keyPad_btnUnaryOp min"><span class="baseele">tan</span><span class="superscript">-1</span></a>
+            <a href="#nogo" id="keyPad_btnYrootX" class="keyPad_btnBinaryOp"><span class="superscript" style="top:-8px;">y</span><span class="baseele" style="font-size:1.2em;margin:-6px 0 0 -9px;">&#8730;x</span></a>
+            <a href="#nogo" id="keyPad_btnCubeRoot" class="keyPad_btnUnaryOp" style="font-size:16px;">&#8731;</a>
+            <a href="#nogo" id="keyPad_btnAbs"  class="keyPad_btnUnaryOp">|x|</a>
+            <a href="#nogo" id="keyPad_btn0"    class="keyPad_btnNumeric">0</a>
+            <a href="#nogo" id="keyPad_btnDot"  class="keyPad_btnNumeric">.</a>
+            <a href="#nogo" id="keyPad_btnPlus" class="keyPad_btnBinaryOp" style="font-size:18px;">+</a>
+          </div>
+          <!-- = button: absolutely positioned, spans both rows -->
           <a href="#nogo" id="keyPad_btnEnter" class="keyPad_btnCommand">=</a>
         </div>
       </div>
@@ -403,6 +473,15 @@
       </div>
     </div><!-- /mainContentArea -->
   </div><!-- /keyPad -->
+
+  <!-- ── Scratch Pad (outside calculator window) ─────────────────── -->
+  <div id="scratchPad">
+    <div id="scratchPadHeader">
+      <span>&#9998; Scratch Pad</span>
+      <button id="scratchClear">Clear</button>
+    </div>
+    <textarea id="scratchArea" placeholder="Type notes, intermediate values, or reminders here..."></textarea>
+  </div>
 
   <script>
     // =====================================================================
@@ -1098,6 +1177,12 @@
     // Prevent anchor navigation
     document.querySelectorAll('#keyPad a').forEach(function (a) {
       a.addEventListener('click', function (e) { e.preventDefault(); });
+    });
+
+    // Scratch Pad clear
+    document.getElementById('scratchClear').addEventListener('click', function () {
+      document.getElementById('scratchArea').value = '';
+      document.getElementById('scratchArea').focus();
     });
 
     // =====================================================================
