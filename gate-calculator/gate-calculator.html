@@ -309,6 +309,25 @@
 
     #scratchClear:hover { background: #bf360c; }
 
+    #scratchMin {
+      background: #555;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      user-select: none;
+    }
+
+    #scratchMin:hover { background: #333; }
+
     #scratchArea {
       width: 100%;
       min-height: 340px;
@@ -478,7 +497,10 @@
   <div id="scratchPad">
     <div id="scratchPadHeader">
       <span>&#9998; Scratch Pad</span>
-      <button id="scratchClear">Clear</button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button id="scratchClear">Clear</button>
+        <button id="scratchMin" title="Minimize">&#8722;</button>
+      </div>
     </div>
     <textarea id="scratchArea" placeholder="Type notes, intermediate values, or reminders here..."></textarea>
   </div>
@@ -1184,6 +1206,51 @@
       document.getElementById('scratchArea').value = '';
       document.getElementById('scratchArea').focus();
     });
+
+    // Scratch Pad minimize / restore
+    document.getElementById('scratchMin').addEventListener('click', function () {
+      var area = document.getElementById('scratchArea');
+      if (area.style.display === 'none') {
+        area.style.display = '';
+        this.textContent = '\u2212';
+        this.title = 'Minimize';
+      } else {
+        area.style.display = 'none';
+        this.textContent = '+';
+        this.title = 'Restore';
+      }
+    });
+
+    // Scratch Pad draggable
+    (function () {
+      var sp     = document.getElementById('scratchPad');
+      var handle = document.getElementById('scratchPadHeader');
+      var dragging = false, ox, oy, sx, sy;
+
+      handle.style.cursor = 'move';
+
+      handle.addEventListener('mousedown', function (e) {
+        var tid = e.target.id;
+        if (tid === 'scratchClear' || tid === 'scratchMin') return;
+        var rect = sp.getBoundingClientRect();
+        ox = rect.left; oy = rect.top;
+        sx = e.clientX;  sy = e.clientY;
+        sp.style.position = 'fixed';
+        sp.style.left     = ox + 'px';
+        sp.style.top      = oy + 'px';
+        sp.style.margin   = '0';
+        dragging = true;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', function (e) {
+        if (!dragging) return;
+        sp.style.left = (ox + e.clientX - sx) + 'px';
+        sp.style.top  = (oy + e.clientY - sy) + 'px';
+      });
+
+      document.addEventListener('mouseup', function () { dragging = false; });
+    })();
 
     // =====================================================================
     //  DRAGGABLE
