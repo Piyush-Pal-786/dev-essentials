@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/github/license/your-org/dev-essentials)
 ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)
-![Tools](https://img.shields.io/badge/tools-2-blue)
+![Tools](https://img.shields.io/badge/tools-3-blue)
 
 ---
 
@@ -43,6 +43,7 @@ This repository currently includes the following tools:
 | :--- | :--- | :--- |
 | **ASCII Tree Generator** | [`ascii-tree-generator/`](ascii-tree-generator/) | Converts an indented list into a formatted ASCII directory tree. Supports 6 styles, live search, 4 export formats, drag-and-drop import, and light/dark theme. |
 | **Scientific Gate Calculator** | [`gate-calculator/`](gate-calculator/) | A fully self-contained scientific calculator with arithmetic, trigonometric, logarithmic, hyperbolic, and power functions, memory operations, parentheses support, and a companion Scratch Pad. (`Helpful- For preparing GATE exams.`) |
+| **Google Dork Helper** | [`google-dork-helper/`](google-dork-helper/) | A visual query builder and reference guide for Google Dork operators. Supports 14 core operators, 20+ OSINT presets, a Google Advanced Search–style form, multi-engine search (Google, Bing, DuckDuckGo, Yandex, Yahoo, Startpage, Brave), saved queries, syntax highlighting, and dark/light mode. |
 | **In-Browser Markdown Editor** | *(coming soon)* | A quick and easy way to edit Markdown files directly in your web browser without any installation. `work-in-progress` |
 | *...more to come!* | — | We are always looking to add more useful tools. |
 
@@ -63,6 +64,10 @@ dev-essentials
 │   ├── CHANGELOG.md
 │   ├── README.md
 │   └── gate-calculator.html
+├── google-dork-helper
+│   ├── CHANGELOG.md
+│   ├── README.md
+│   └── google-dork-helper.html
 ├── CONTRIBUTING.md
 ├── README.md
 └── LICENSE
@@ -84,6 +89,10 @@ dev-essentials
 | `gate-calculator/gate-calculator.html` | App file | Single-file web app — open in any browser, no installation needed |
 | `gate-calculator/README.md` | Documentation | Full feature guide, usage instructions, and limitations for this tool |
 | `gate-calculator/CHANGELOG.md` | Changelog | Version history for the Scientific Gate Calculator |
+| `google-dork-helper/` | Tool folder | Self-contained folder for the Google Dork Helper tool |
+| `google-dork-helper/google-dork-helper.html` | App file | Single-file web app — open in any browser, no installation needed |
+| `google-dork-helper/README.md` | Documentation | Full feature guide, OSINT context, operator reference, and usage guide |
+| `google-dork-helper/CHANGELOG.md` | Changelog | Version history for the Google Dork Helper |
 | `CONTRIBUTING.md` | Guidelines | How to contribute: adding tools, code style, commit format, PR process |
 | `README.md` | Documentation | This file — project overview, quick start, tool index, and structure |
 | `LICENSE` | License | Open-source license governing use and distribution of the project |

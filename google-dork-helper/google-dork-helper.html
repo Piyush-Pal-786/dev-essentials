@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Dork Helper</title>
+  <style>
+    /* ── CSS custom properties (dark default) ── */
+    :root {
+      --bg:         #1e1e2e;
+      --surface:    #27273a;
+      --surface2:   #313145;
+      --border:     #44445a;
+      --text:       #cdd6f4;
+      --muted:      #6c7086;
+      --accent:     #89b4fa;
+      --accent2:    #cba6f7;
+      --green:      #a6e3a1;
+      --red:        #f38ba8;
+      --yellow:     #f9e2af;
+      --orange:     #fab387;
+      --teal:       #94e2d5;
+    }
+    [data-theme="light"] {
+      --bg:         #eff1f5;
+      --surface:    #e6e9ef;
+      --surface2:   #dce0e8;
+      --border:     #ccd0da;
+      --text:       #4c4f69;
+      --muted:      #9ca0b0;
+      --accent:     #1e66f5;
+      --accent2:    #8839ef;
+      --green:      #40a02b;
+      --red:        #d20f39;
+      --yellow:     #df8e1d;
+      --orange:     #fe640b;
+      --teal:       #179299;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ══════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════ */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      min-height: 54px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      row-gap: 6px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+      letter-spacing: 0.03em;
+    }
+    header h1 span { color: var(--accent2); }
+    .hdr-sep { width: 1px; height: 22px; background: var(--border); flex-shrink: 0; }
+    .hdr-spacer { flex: 1; }
+    .hdr-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    /* nav tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 2px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 3px;
+    }
+    .nav-tab {
+      padding: 5px 14px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-tab.active { background: var(--surface); color: var(--text); }
+    .nav-tab:hover:not(.active) { color: var(--text); }
+
+    /* ── theme toggle ── */
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 10px;
+      font-size: 0.82rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.12s;
+    }
+    .theme-btn:hover { background: var(--border); }
+
+    /* ══════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════ */
+    .page { display: none; flex-direction: column; flex: 1; }
+    .page.active { display: flex; }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+    }
+
+    /* ══════════════════════════════════════
+       BUILDER PAGE
+    ══════════════════════════════════════ */
+    .builder-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 780px) { .builder-grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title .icon { font-size: 1rem; }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .form-row label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .form-row .hint {
+      font-size: 0.73rem;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .form-row input[type="text"],
+    .form-row select,
+    .form-row textarea {
+      width: 100%;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-row input:focus,
+    .form-row select:focus,
+    .form-row textarea:focus { border-color: var(--accent); }
+    .form-row textarea { resize: vertical; min-height: 60px; }
+
+    /* operator row */
+    .op-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .op-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: border-color 0.12s, background 0.12s;
+    }
+    .op-item:hover { border-color: var(--accent); background: var(--border); }
+    .op-item.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, var(--surface2)); }
+    .op-item .op-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+    }
+    .op-item .op-desc { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+    .op-item .op-input { margin-top: 6px; display: none; }
+    .op-item.active .op-input { display: flex; flex-direction: column; gap: 4px; }
+    .op-input input {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      outline: none;
+    }
+    .op-input input:focus { border-color: var(--accent); }
+
+    /* query preview */
+    .query-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-top: 20px;
+    }
+    .query-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+    #queryPreview {
+      font-family: 'Consolas', 'Cascadia Code', 'Courier New', monospace;
+      font-size: 0.92rem;
+      color: var(--yellow);
+      word-break: break-all;
+      min-height: 34px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    #queryPreview .token-site   { color: var(--green); }
+    #queryPreview .token-inurl  { color: var(--teal); }
+    #queryPreview .token-intitle{ color: var(--accent); }
+    #queryPreview .token-intext { color: var(--orange); }
+    #queryPreview .token-filetype{ color: var(--accent2); }
+    #queryPreview .token-ext    { color: var(--red); }
+    #queryPreview .token-plain  { color: var(--yellow); }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .engine-select {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 0.82rem;
+      outline: none;
+      cursor: pointer;
+    }
+    .engine-select:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 7px 16px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      cursor: pointer;
+      background: var(--surface2);
+      color: var(--text);
+      transition: background 0.12s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--border); }
+    .btn.primary { background: var(--accent); color: #1e1e2e; border-color: var(--accent); }
+    .btn.primary:hover { opacity: 0.85; }
+    .btn.secondary { background: var(--surface2); color: var(--text); }
+    .btn.danger { background: var(--red); color: #1e1e2e; border-color: var(--red); }
+    .btn.danger:hover { opacity: 0.85; }
+    .btn.copy-btn { font-size: 0.78rem; padding: 5px 12px; }
+
+    /* tag chips */
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+    .chip {
+      font-size: 0.73rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2px 10px;
+      cursor: pointer;
+      color: var(--muted);
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--text); }
+
+    /* section headers inside builder */
+    .section-head {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin: 18px 0 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .section-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ══════════════════════════════════════
+       ADVANCED SEARCH (google-style form)
+    ══════════════════════════════════════ */
+    .adv-form { max-width: 700px; }
+    .adv-section { margin-bottom: 28px; }
+    .adv-section-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+    .adv-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 10px;
+      align-items: start;
+      margin-bottom: 10px;
+    }
+    @media (max-width: 580px) { .adv-row { grid-template-columns: 1fr; } }
+    .adv-row .adv-label {
+      font-size: 0.82rem;
+      color: var(--text);
+      padding-top: 8px;
+    }
+    .adv-row .adv-sublabel {
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .adv-row input[type="text"],
+    .adv-row select {
+      width: 100%;
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 7px 10px;
+      font-size: 0.85rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .adv-row input:focus,
+    .adv-row select:focus { border-color: var(--accent); }
+
+    /* ══════════════════════════════════════
+       GUIDE / REFERENCE PAGE
+    ══════════════════════════════════════ */
+    .guide-toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .guide-toc h3 { font-size: 0.82rem; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.06em; }
+    .guide-toc ol { padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+    .guide-toc a { font-size: 0.85rem; color: var(--accent); text-decoration: none; }
+    .guide-toc a:hover { text-decoration: underline; }
+
+    .guide-section { margin-bottom: 36px; }
+    .guide-section h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      scroll-margin-top: 70px;
+    }
+    .guide-section p, .guide-section li {
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: var(--text);
+    }
+    .guide-section ul, .guide-section ol {
+      padding-left: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .guide-section p { margin-bottom: 8px; }
+
+    .op-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.84rem;
+    }
+    .op-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      font-weight: 700;
+      text-align: left;
+      padding: 7px 12px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .op-table td {
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .op-table tr:hover td { background: var(--surface2); }
+    .op-table code {
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+      color: var(--accent);
+      font-size: 0.82rem;
+      background: var(--surface2);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .op-table .ex {
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+      color: var(--yellow);
+      font-size: 0.8rem;
+    }
+
+    .callout {
+      background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+      border-left: 3px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .callout.warn {
+      background: color-mix(in srgb, var(--yellow) 12%, var(--surface));
+      border-color: var(--yellow);
+    }
+    .callout.danger {
+      background: color-mix(in srgb, var(--red) 12%, var(--surface));
+      border-color: var(--red);
+    }
+    .callout strong { color: var(--accent); }
+    .callout.warn strong { color: var(--yellow); }
+    .callout.danger strong { color: var(--red); }
+
+    .engine-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+      margin-top: 10px;
+    }
+    .engine-table th {
+      background: var(--surface2);
+      color: var(--muted);
+      padding: 7px 12px;
+      text-align: left;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+    }
+    .engine-table td { padding: 8px 12px; border-top: 1px solid var(--border); vertical-align: top; }
+    .engine-table tr:hover td { background: var(--surface2); }
+    .badge-yes { color: var(--green); font-weight: 700; }
+    .badge-partial { color: var(--yellow); font-weight: 700; }
+    .badge-no { color: var(--red); font-weight: 700; }
+
+    /* ══════════════════════════════════════
+       SAVED QUERIES PAGE
+    ══════════════════════════════════════ */
+    .saved-list { display: flex; flex-direction: column; gap: 10px; }
+    .saved-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .saved-item .saved-body { flex: 1; min-width: 0; }
+    .saved-item .saved-name { font-size: 0.88rem; font-weight: 700; margin-bottom: 4px; }
+    .saved-item .saved-query {
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+      font-size: 0.8rem;
+      color: var(--yellow);
+      word-break: break-all;
+    }
+    .saved-item .saved-actions { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; }
+    .empty-state {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+      padding: 48px 0;
+    }
+
+    /* ══════════════════════════════════════
+       MISC
+    ══════════════════════════════════════ */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--green);
+      color: #1e1e2e;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 999;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+
+    footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+══════════════════════════════════════════════════════════ -->
+<header>
+  <h1>🔍 Google Dork <span>Helper</span></h1>
+  <div class="hdr-sep"></div>
+  <nav class="nav-tabs" role="tablist">
+    <button class="nav-tab active" data-page="builder" role="tab">⚒️ Builder</button>
+    <button class="nav-tab" data-page="advanced" role="tab">🔬 Advanced Form</button>
+    <button class="nav-tab" data-page="guide" role="tab">📚 Guide</button>
+    <button class="nav-tab" data-page="saved" role="tab">💾 Saved</button>
+  </nav>
+  <div class="hdr-spacer"></div>
+  <button class="theme-btn" id="themeToggle" title="Toggle light/dark mode">🌙 Dark</button>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════
+     BUILDER PAGE
+══════════════════════════════════════════════════════════ -->
+<section class="page active" id="page-builder" role="tabpanel">
+<div class="container">
+
+  <div class="builder-grid">
+    <!-- LEFT COLUMN: basic + core operators -->
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="icon">🔤</span> Basic Search Terms</div>
+
+        <div class="form-row">
+          <label>All of these words <span class="hint">— plain keywords (AND)</span></label>
+          <input type="text" id="b-all" placeholder="e.g. password reset" oninput="buildQuery()" />
+        </div>
+        <div class="form-row">
+          <label>Exact phrase <span class="hint">— wraps in quotes</span></label>
+          <input type="text" id="b-exact" placeholder="e.g. admin login" oninput="buildQuery()" />
+        </div>
+        <div class="form-row">
+          <label>Any of these words <span class="hint">— OR logic</span></label>
+          <input type="text" id="b-any" placeholder="e.g. password passwd" oninput="buildQuery()" />
+        </div>
+        <div class="form-row">
+          <label>None of these words <span class="hint">— exclude terms</span></label>
+          <input type="text" id="b-none" placeholder="e.g. tutorial demo" oninput="buildQuery()" />
+        </div>
+      </div>
+
+      <div class="section-head">Core Operators</div>
+
+      <div class="card">
+        <div class="op-row">
+
+          <!-- site: -->
+          <div class="op-item" data-op="site" onclick="toggleOp(this)">
+            <div class="op-name">site:</div>
+            <div class="op-desc">Limit to a domain</div>
+            <div class="op-input">
+              <input type="text" placeholder="example.com" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- inurl: -->
+          <div class="op-item" data-op="inurl" onclick="toggleOp(this)">
+            <div class="op-name">inurl:</div>
+            <div class="op-desc">Word in URL</div>
+            <div class="op-input">
+              <input type="text" placeholder="login" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- intitle: -->
+          <div class="op-item" data-op="intitle" onclick="toggleOp(this)">
+            <div class="op-name">intitle:</div>
+            <div class="op-desc">Word in page title</div>
+            <div class="op-input">
+              <input type="text" placeholder="index of" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- intext: -->
+          <div class="op-item" data-op="intext" onclick="toggleOp(this)">
+            <div class="op-name">intext:</div>
+            <div class="op-desc">Word in body text</div>
+            <div class="op-input">
+              <input type="text" placeholder="password" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- filetype: -->
+          <div class="op-item" data-op="filetype" onclick="toggleOp(this)">
+            <div class="op-name">filetype:</div>
+            <div class="op-desc">Specific file type</div>
+            <div class="op-input">
+              <input type="text" placeholder="pdf, xls, sql…" oninput="buildQuery()" />
+              <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">
+                <span class="chip" onclick="setOpVal(this,'filetype','pdf');event.stopPropagation()">pdf</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','xls');event.stopPropagation()">xls</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','xlsx');event.stopPropagation()">xlsx</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','doc');event.stopPropagation()">doc</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','sql');event.stopPropagation()">sql</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','env');event.stopPropagation()">env</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','log');event.stopPropagation()">log</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','xml');event.stopPropagation()">xml</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','json');event.stopPropagation()">json</span>
+                <span class="chip" onclick="setOpVal(this,'filetype','csv');event.stopPropagation()">csv</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ext: -->
+          <div class="op-item" data-op="ext" onclick="toggleOp(this)">
+            <div class="op-name">ext:</div>
+            <div class="op-desc">File extension</div>
+            <div class="op-input">
+              <input type="text" placeholder="php, asp, cfg…" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- cache: -->
+          <div class="op-item" data-op="cache" onclick="toggleOp(this)">
+            <div class="op-name">cache:</div>
+            <div class="op-desc">Cached version</div>
+            <div class="op-input">
+              <input type="text" placeholder="example.com" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- related: -->
+          <div class="op-item" data-op="related" onclick="toggleOp(this)">
+            <div class="op-name">related:</div>
+            <div class="op-desc">Similar sites</div>
+            <div class="op-input">
+              <input type="text" placeholder="nytimes.com" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- link: -->
+          <div class="op-item" data-op="link" onclick="toggleOp(this)">
+            <div class="op-name">link:</div>
+            <div class="op-desc">Links to a page</div>
+            <div class="op-input">
+              <input type="text" placeholder="example.com" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- allinurl: -->
+          <div class="op-item" data-op="allinurl" onclick="toggleOp(this)">
+            <div class="op-name">allinurl:</div>
+            <div class="op-desc">All words in URL</div>
+            <div class="op-input">
+              <input type="text" placeholder="admin config" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- allintitle: -->
+          <div class="op-item" data-op="allintitle" onclick="toggleOp(this)">
+            <div class="op-name">allintitle:</div>
+            <div class="op-desc">All words in title</div>
+            <div class="op-input">
+              <input type="text" placeholder="confidential report" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- allintext: -->
+          <div class="op-item" data-op="allintext" onclick="toggleOp(this)">
+            <div class="op-name">allintext:</div>
+            <div class="op-desc">All words in body</div>
+            <div class="op-input">
+              <input type="text" placeholder="username password" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- before: -->
+          <div class="op-item" data-op="before" onclick="toggleOp(this)">
+            <div class="op-name">before:</div>
+            <div class="op-desc">Indexed before date</div>
+            <div class="op-input">
+              <input type="text" placeholder="2023-01-01" oninput="buildQuery()" />
+            </div>
+          </div>
+
+          <!-- after: -->
+          <div class="op-item" data-op="after" onclick="toggleOp(this)">
+            <div class="op-name">after:</div>
+            <div class="op-desc">Indexed after date</div>
+            <div class="op-input">
+              <input type="text" placeholder="2024-01-01" oninput="buildQuery()" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: presets + query preview -->
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="icon">⚡</span> OSINT Presets</div>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Click a preset to instantly load a dork template into the builder.</p>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+
+          <div style="font-size:0.73rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px;">🔑 Exposed Credentials</div>
+          <div class="chips">
+            <span class="chip" onclick="applyPreset('env-files')">ENV files</span>
+            <span class="chip" onclick="applyPreset('sql-dumps')">SQL dumps</span>
+            <span class="chip" onclick="applyPreset('git-config')">Git config</span>
+            <span class="chip" onclick="applyPreset('htpasswd')">htpasswd</span>
+            <span class="chip" onclick="applyPreset('aws-keys')">AWS keys</span>
+            <span class="chip" onclick="applyPreset('db-backup')">DB backup</span>
+          </div>
+
+          <div style="font-size:0.73rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin-top:10px;">📂 Open Directories</div>
+          <div class="chips">
+            <span class="chip" onclick="applyPreset('open-dir')">Index of /</span>
+            <span class="chip" onclick="applyPreset('open-uploads')">Open uploads</span>
+            <span class="chip" onclick="applyPreset('open-backup')">Backup dirs</span>
+          </div>
+
+          <div style="font-size:0.73rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin-top:10px;">🖥️ Login Panels</div>
+          <div class="chips">
+            <span class="chip" onclick="applyPreset('admin-login')">Admin panels</span>
+            <span class="chip" onclick="applyPreset('phpmyadmin')">phpMyAdmin</span>
+            <span class="chip" onclick="applyPreset('cpanel')">cPanel</span>
+            <span class="chip" onclick="applyPreset('webmail')">Webmail</span>
+          </div>
+
+          <div style="font-size:0.73rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin-top:10px;">📄 Sensitive Documents</div>
+          <div class="chips">
+            <span class="chip" onclick="applyPreset('confidential-pdf')">Confidential PDFs</span>
+            <span class="chip" onclick="applyPreset('passwords-xls')">Password XLS</span>
+            <span class="chip" onclick="applyPreset('network-config')">Network configs</span>
+            <span class="chip" onclick="applyPreset('internal-docs')">Internal docs</span>
+          </div>
+
+          <div style="font-size:0.73rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:0.06em;margin-top:10px;">🌐 Recon</div>
+          <div class="chips">
+            <span class="chip" onclick="applyPreset('subdomain-enum')">Subdomain enum</span>
+            <span class="chip" onclick="applyPreset('tech-stack')">Tech stack</span>
+            <span class="chip" onclick="applyPreset('error-messages')">Error messages</span>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="card">
+          <div class="card-title"><span class="icon">✏️</span> Manual Query Override</div>
+          <div class="form-row">
+            <label>Type or paste a raw dork query <span class="hint">— overrides the builder above</span></label>
+            <textarea id="manualQuery" placeholder="e.g. site:example.com filetype:sql &quot;password&quot;" rows="3" oninput="onManualInput()"></textarea>
+          </div>
+          <button class="btn secondary" style="font-size:0.78rem;padding:4px 10px;" onclick="clearManual()">Clear Override</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUERY PREVIEW + SEARCH -->
+  <div class="query-box">
+    <div class="query-label">📋 Generated Query</div>
+    <div id="queryPreview"><span style="color:var(--muted)">Start filling fields or selecting operators…</span></div>
+    <div class="search-row">
+      <select class="engine-select" id="engineSelect">
+        <option value="google">🔍 Google</option>
+        <option value="bing">🔍 Bing</option>
+        <option value="duckduckgo">🦆 DuckDuckGo</option>
+        <option value="yandex">🔍 Yandex</option>
+        <option value="yahoo">🔍 Yahoo</option>
+        <option value="startpage">🔒 Startpage</option>
+        <option value="brave">🦁 Brave Search</option>
+      </select>
+      <button class="btn primary" onclick="doSearch()">🚀 Search</button>
+      <button class="btn copy-btn" onclick="copyQuery()">📋 Copy Query</button>
+      <button class="btn copy-btn" onclick="saveQuery()">💾 Save Query</button>
+      <button class="btn danger copy-btn" onclick="clearAll()">🗑️ Clear All</button>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     ADVANCED FORM PAGE (Google Advanced Search style)
+══════════════════════════════════════════════════════════ -->
+<section class="page" id="page-advanced" role="tabpanel">
+<div class="container">
+  <div class="adv-form">
+
+    <div class="adv-section">
+      <div class="adv-section-title">Find pages with…</div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">All these words</div>
+          <div class="adv-sublabel">Type the important words</div>
+        </div>
+        <input type="text" id="adv-all" placeholder="e.g. annual report finance" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">This exact word or phrase</div>
+          <div class="adv-sublabel">Put exact words in quotes</div>
+        </div>
+        <input type="text" id="adv-exact" placeholder='e.g. "not for distribution"' oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Any of these words</div>
+          <div class="adv-sublabel">Type OR between all the words you want</div>
+        </div>
+        <input type="text" id="adv-any" placeholder="e.g. miniature OR apartment" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">None of these words</div>
+          <div class="adv-sublabel">Put a minus sign just before words you don't want</div>
+        </div>
+        <input type="text" id="adv-none" placeholder="e.g. renting leasing" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Numbers ranging from</div>
+          <div class="adv-sublabel">Put two full stops between numbers e.g. £10..£35</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="text" id="adv-num-from" placeholder="from" style="width:90px;" oninput="buildAdvQuery()" />
+          <span style="font-size:0.85rem;color:var(--muted)">to</span>
+          <input type="text" id="adv-num-to" placeholder="to" style="width:90px;" oninput="buildAdvQuery()" />
+        </div>
+      </div>
+    </div>
+
+    <div class="adv-section">
+      <div class="adv-section-title">Narrow your results by…</div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Site or domain</div>
+          <div class="adv-sublabel">e.g. youtube.com, .edu, .gov</div>
+        </div>
+        <input type="text" id="adv-site" placeholder="e.g. .gov or nasa.gov" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">URL contains</div>
+          <div class="adv-sublabel">Word(s) that must appear in the URL</div>
+        </div>
+        <input type="text" id="adv-inurl" placeholder="e.g. admin panel" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Title contains</div>
+          <div class="adv-sublabel">Word(s) that must appear in the page title</div>
+        </div>
+        <input type="text" id="adv-intitle" placeholder="e.g. login page" oninput="buildAdvQuery()" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">File type</div>
+          <div class="adv-sublabel">Search for a specific file format</div>
+        </div>
+        <select id="adv-filetype" onchange="buildAdvQuery()">
+          <option value="">Any format</option>
+          <option value="pdf">PDF (.pdf)</option>
+          <option value="doc">Word (.doc)</option>
+          <option value="docx">Word (.docx)</option>
+          <option value="xls">Excel (.xls)</option>
+          <option value="xlsx">Excel (.xlsx)</option>
+          <option value="ppt">PowerPoint (.ppt)</option>
+          <option value="pptx">PowerPoint (.pptx)</option>
+          <option value="txt">Plain text (.txt)</option>
+          <option value="csv">CSV (.csv)</option>
+          <option value="xml">XML (.xml)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="sql">SQL dump (.sql)</option>
+          <option value="log">Log file (.log)</option>
+          <option value="env">Env file (.env)</option>
+          <option value="cfg">Config (.cfg)</option>
+          <option value="conf">Config (.conf)</option>
+          <option value="ini">INI (.ini)</option>
+          <option value="bak">Backup (.bak)</option>
+          <option value="zip">ZIP archive (.zip)</option>
+          <option value="tar">TAR archive (.tar)</option>
+        </select>
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Published after</div>
+          <div class="adv-sublabel">YYYY-MM-DD format</div>
+        </div>
+        <input type="date" id="adv-after" oninput="buildAdvQuery()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:0.85rem;outline:none;font-family:inherit;width:100%;" />
+      </div>
+
+      <div class="adv-row">
+        <div>
+          <div class="adv-label">Published before</div>
+          <div class="adv-sublabel">YYYY-MM-DD format</div>
+        </div>
+        <input type="date" id="adv-before" oninput="buildAdvQuery()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:7px;padding:7px 10px;font-size:0.85rem;outline:none;font-family:inherit;width:100%;" />
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="query-box">
+      <div class="query-label">📋 Generated Query</div>
+      <div id="advQueryPreview"><span style="color:var(--muted)">Fill in the fields above…</span></div>
+      <div class="search-row" style="margin-top:12px;">
+        <select class="engine-select" id="advEngineSelect">
+          <option value="google">🔍 Google</option>
+          <option value="bing">🔍 Bing</option>
+          <option value="duckduckgo">🦆 DuckDuckGo</option>
+          <option value="yandex">🔍 Yandex</option>
+          <option value="yahoo">🔍 Yahoo</option>
+          <option value="startpage">🔒 Startpage</option>
+          <option value="brave">🦁 Brave Search</option>
+        </select>
+        <button class="btn primary" onclick="doAdvSearch()">🚀 Search</button>
+        <button class="btn copy-btn" onclick="copyAdvQuery()">📋 Copy Query</button>
+        <button class="btn copy-btn" onclick="saveAdvQuery()">💾 Save Query</button>
+        <button class="btn danger copy-btn" onclick="clearAdv()">🗑️ Clear All</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     GUIDE PAGE
+══════════════════════════════════════════════════════════ -->
+<section class="page" id="page-guide" role="tabpanel">
+<div class="container">
+
+  <div class="guide-toc">
+    <h3>Contents</h3>
+    <ol>
+      <li><a href="#what-is">What is Google Dorking?</a></li>
+      <li><a href="#osint">How it is Useful for OSINT</a></li>
+      <li><a href="#operators">Complete Operator Reference</a></li>
+      <li><a href="#engines">Search Engines That Support Dorks</a></li>
+      <li><a href="#using-app">How to Use This Application</a></li>
+      <li><a href="#examples">Real-World Examples</a></li>
+      <li><a href="#ethics">Ethics &amp; Legal Considerations</a></li>
+    </ol>
+  </div>
+
+  <!-- 1 -->
+  <div class="guide-section" id="what-is">
+    <h2>1. What is Google Dorking?</h2>
+    <p><strong>Google Dorking</strong> (also called <em>Google Hacking</em>) is the technique of using advanced Google search operators — called <em>dorks</em> — to find information that is not easily surfaced through standard searches. By combining operators, you can filter results with surgical precision: targeting a specific domain, file type, URL pattern, page title, or body text.</p>
+    <p>The term originates in the security community. Johnny Long catalogued hundreds of dork queries in the <em>Google Hacking Database (GHDB)</em>, showing that public search engines voluntarily index an enormous amount of information that was never intended to be public — open directories, misconfigured servers, exposed credentials, and sensitive documents left accessible by mistake.</p>
+    <div class="callout">
+      <strong>Key idea:</strong> You are not "hacking" Google itself. You are simply using its own search syntax to ask more precise questions about what it has already publicly indexed.
+    </div>
+    <p>Dork queries work because:</p>
+    <ul>
+      <li>Search engines index virtually everything they can crawl, even pages that owners consider private.</li>
+      <li>Many server misconfigurations and forgotten files are publicly accessible but not linked from anywhere obvious.</li>
+      <li>Advanced operators let you filter billions of pages to a handful of highly targeted results.</li>
+    </ul>
+  </div>
+
+  <!-- 2 -->
+  <div class="guide-section" id="osint">
+    <h2>2. How Google Dorking is Useful for OSINT</h2>
+    <p><strong>OSINT</strong> (Open-Source Intelligence) is the collection and analysis of information gathered from publicly available sources. Google Dorking is one of the most powerful passive OSINT techniques available — it requires no special tools, accounts, or permissions, only a browser.</p>
+    <p>Typical OSINT use cases where dorks add value:</p>
+    <ul>
+      <li><strong>Reconnaissance on a target organisation</strong> — map the domain, discover subdomains, locate employee information or documents.</li>
+      <li><strong>Vulnerability discovery (authorised pen testing)</strong> — find exposed configuration files, login panels, database dumps, or error messages leaked by the target's web applications.</li>
+      <li><strong>Competitive intelligence</strong> — discover public financial reports, product roadmaps, or job postings that reveal technology choices.</li>
+      <li><strong>Journalist / researcher investigations</strong> — locate documents, government records, or leaked data sets indexed by search engines.</li>
+      <li><strong>Brand monitoring</strong> — find mentions or unauthorised mirrors of your own content.</li>
+      <li><strong>Academic and threat research</strong> — study malware distribution, phishing kits, or botnet C2 configs that were inadvertently left public.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Important:</strong> OSINT via Google Dorking should only be performed against systems and domains you own or have explicit written authorisation to assess. Accessing data you are not authorised to view — even if it is publicly indexed — may violate computer fraud laws in your jurisdiction.
+    </div>
+  </div>
+
+  <!-- 3 -->
+  <div class="guide-section" id="operators">
+    <h2>3. Complete Operator Reference</h2>
+
+    <p>Operators are divided into three categories: <strong>basic modifiers</strong>, <strong>search scope operators</strong>, and <strong>combination logic</strong>.</p>
+
+    <h3 style="font-size:0.9rem;color:var(--accent2);margin:16px 0 8px;">Basic Modifiers</h3>
+    <table class="op-table">
+      <thead><tr><th>Syntax</th><th>What it does</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>"exact phrase"</code></td><td>Match an exact word or phrase, case-insensitive</td><td class="ex">"index of /" filetype:sql</td></tr>
+        <tr><td><code>-word</code></td><td>Exclude pages containing this word</td><td class="ex">password -tutorial</td></tr>
+        <tr><td><code>word1 OR word2</code></td><td>Match either word (also: <code>word1 | word2</code>)</td><td class="ex">passwd OR password</td></tr>
+        <tr><td><code>*</code></td><td>Wildcard — match any word in that position</td><td class="ex">"how to * a server"</td></tr>
+        <tr><td><code>()</code></td><td>Group expressions</td><td class="ex">site:gov (filetype:pdf OR filetype:doc)</td></tr>
+        <tr><td><code>num1..num2</code></td><td>Number range</td><td class="ex">camera $50..$200</td></tr>
+        <tr><td><code>#..#</code></td><td>Alternative number range notation</td><td class="ex">phone 2020..2024</td></tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size:0.9rem;color:var(--accent2);margin:16px 0 8px;">Scope Operators</h3>
+    <table class="op-table">
+      <thead><tr><th>Operator</th><th>What it does</th><th>Example</th><th>Tip</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>site:</code></td>
+          <td>Restrict results to a domain or TLD</td>
+          <td class="ex">site:github.com passwords</td>
+          <td>Use <code>site:.edu</code> for all .edu domains</td>
+        </tr>
+        <tr>
+          <td><code>inurl:</code></td>
+          <td>Word must appear in the URL</td>
+          <td class="ex">inurl:admin inurl:login</td>
+          <td>Chain multiple <code>inurl:</code> for AND logic in URL</td>
+        </tr>
+        <tr>
+          <td><code>allinurl:</code></td>
+          <td>All words must appear in the URL</td>
+          <td class="ex">allinurl:wp-admin setup-config.php</td>
+          <td>Cannot be combined with other operators after it</td>
+        </tr>
+        <tr>
+          <td><code>intitle:</code></td>
+          <td>Word must appear in the page &lt;title&gt;</td>
+          <td class="ex">intitle:"index of" backup</td>
+          <td>Very useful for finding open directories</td>
+        </tr>
+        <tr>
+          <td><code>allintitle:</code></td>
+          <td>All listed words must appear in the title</td>
+          <td class="ex">allintitle:confidential quarterly report</td>
+          <td>Cannot be combined with other operators after it</td>
+        </tr>
+        <tr>
+          <td><code>intext:</code></td>
+          <td>Word must appear in the visible body text</td>
+          <td class="ex">intext:"db_password"</td>
+          <td>Use with quotes for exact matches</td>
+        </tr>
+        <tr>
+          <td><code>allintext:</code></td>
+          <td>All words must appear in the body</td>
+          <td class="ex">allintext:username password email</td>
+          <td>Cannot be combined with other operators after it</td>
+        </tr>
+        <tr>
+          <td><code>filetype:</code></td>
+          <td>Match only pages of this file type</td>
+          <td class="ex">filetype:sql "create table users"</td>
+          <td>Works for pdf, doc, xls, ppt, sql, xml, txt, etc.</td>
+        </tr>
+        <tr>
+          <td><code>ext:</code></td>
+          <td>Alias for <code>filetype:</code>, matches by extension</td>
+          <td class="ex">ext:env "DB_PASSWORD"</td>
+          <td>Useful for finding .env, .cfg, .bak files</td>
+        </tr>
+        <tr>
+          <td><code>cache:</code></td>
+          <td>Show Google's cached version of a URL</td>
+          <td class="ex">cache:example.com/admin</td>
+          <td>Useful if the live page is down or changed</td>
+        </tr>
+        <tr>
+          <td><code>related:</code></td>
+          <td>Find sites similar to a given URL</td>
+          <td class="ex">related:nytimes.com</td>
+          <td>Good for competitive research</td>
+        </tr>
+        <tr>
+          <td><code>link:</code></td>
+          <td>Find pages that link to a URL (limited)</td>
+          <td class="ex">link:example.com</td>
+          <td>Google has deprecated full support; use with caution</td>
+        </tr>
+        <tr>
+          <td><code>info:</code></td>
+          <td>Show info Google knows about a URL</td>
+          <td class="ex">info:example.com</td>
+          <td>Shows cache, links, and similar pages</td>
+        </tr>
+        <tr>
+          <td><code>define:</code></td>
+          <td>Dictionary definition of a word</td>
+          <td class="ex">define:reconnaissance</td>
+          <td>Pulls results from dictionary sources</td>
+        </tr>
+        <tr>
+          <td><code>stocks:</code></td>
+          <td>Stock information for a ticker symbol</td>
+          <td class="ex">stocks:AAPL</td>
+          <td>Finance research</td>
+        </tr>
+        <tr>
+          <td><code>map:</code></td>
+          <td>Return map results for a location</td>
+          <td class="ex">map:New York</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>movie:</code></td>
+          <td>Return movie information</td>
+          <td class="ex">movie:Inception</td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><code>before:</code></td>
+          <td>Content indexed before a date (YYYY-MM-DD)</td>
+          <td class="ex">site:example.com before:2020-01-01</td>
+          <td>Useful for historical research</td>
+        </tr>
+        <tr>
+          <td><code>after:</code></td>
+          <td>Content indexed after a date (YYYY-MM-DD)</td>
+          <td class="ex">site:example.com after:2024-01-01</td>
+          <td>Narrow to recent content</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 4 -->
+  <div class="guide-section" id="engines">
+    <h2>4. Search Engines That Support Dorks</h2>
+    <p>Google is the most comprehensive, but other engines offer partial or full support for dorking operators — and some offer privacy advantages.</p>
+    <table class="engine-table">
+      <thead>
+        <tr>
+          <th>Engine</th>
+          <th>site:</th>
+          <th>inurl:</th>
+          <th>intitle:</th>
+          <th>filetype:</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Google</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td>Most complete operator support; rate-limits aggressive queries</td>
+        </tr>
+        <tr>
+          <td><strong>Bing</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td>Often indexes things Google doesn't; good fallback</td>
+        </tr>
+        <tr>
+          <td><strong>DuckDuckGo</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td>Privacy-focused; passes <code>site:</code> well, other operators inconsistent</td>
+        </tr>
+        <tr>
+          <td><strong>Yandex</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td>Very large index for Russian-language web; useful for CIS targets</td>
+        </tr>
+        <tr>
+          <td><strong>Yahoo</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-no">✗ Limited</td>
+          <td>Powered by Bing; similar support level</td>
+        </tr>
+        <tr>
+          <td><strong>Startpage</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-yes">✔ Full</td>
+          <td>Proxies Google results anonymously — full operator support without Google tracking</td>
+        </tr>
+        <tr>
+          <td><strong>Brave Search</strong></td>
+          <td class="badge-yes">✔ Full</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-partial">~ Partial</td>
+          <td class="badge-no">✗ Limited</td>
+          <td>Independent index; growing operator support</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 5 -->
+  <div class="guide-section" id="using-app">
+    <h2>5. How to Use This Application</h2>
+
+    <h3 style="font-size:0.9rem;color:var(--accent2);margin:14px 0 8px;">⚒️ Builder Tab</h3>
+    <ul>
+      <li>Fill in the <strong>Basic Search Terms</strong> card for plain-language keywords (AND, exact phrase, OR, exclusions).</li>
+      <li>Click any <strong>operator chip</strong> in the "Core Operators" section to activate it. An input field will appear inside the chip — type your value there.</li>
+      <li>The <strong>Generated Query</strong> box updates live as you type. Operators are colour-coded for readability.</li>
+      <li>Use <strong>OSINT Presets</strong> to instantly load well-known dork templates — handy for security assessments.</li>
+      <li>Use <strong>Manual Query Override</strong> to type or paste a raw query if the builder doesn't cover your exact needs.</li>
+      <li>Select a <strong>search engine</strong>, then click <strong>Search</strong> to open results in a new browser tab.</li>
+      <li>Use <strong>Copy Query</strong> to copy to clipboard, or <strong>Save Query</strong> to store it in the Saved tab.</li>
+    </ul>
+
+    <h3 style="font-size:0.9rem;color:var(--accent2);margin:14px 0 8px;">🔬 Advanced Form Tab</h3>
+    <ul>
+      <li>Mirrors the layout of <strong>Google's own Advanced Search</strong> page (<code>google.com/advanced_search</code>).</li>
+      <li>The form automatically translates each field into the correct Google dork operators.</li>
+      <li>Use the <strong>file type dropdown</strong> to select from a comprehensive list of file extensions.</li>
+      <li>Use <strong>Published after / before</strong> date pickers to add <code>after:</code> and <code>before:</code> operators automatically.</li>
+    </ul>
+
+    <h3 style="font-size:0.9rem;color:var(--accent2);margin:14px 0 8px;">💾 Saved Tab</h3>
+    <ul>
+      <li>Saved queries are stored in your browser's <strong>localStorage</strong> — they persist across sessions on the same device.</li>
+      <li>Each saved query shows a name, the raw query string, and action buttons: Load, Search, Copy, and Delete.</li>
+      <li>When saving, you will be prompted for a short friendly name to identify the query later.</li>
+    </ul>
+  </div>
+
+  <!-- 6 -->
+  <div class="guide-section" id="examples">
+    <h2>6. Real-World Examples</h2>
+    <table class="op-table">
+      <thead><tr><th>Goal</th><th>Dork Query</th></tr></thead>
+      <tbody>
+        <tr><td>Find open directory listings</td><td class="ex">intitle:"index of /" site:example.com</td></tr>
+        <tr><td>Exposed .env configuration files</td><td class="ex">ext:env "DB_PASSWORD" OR "APP_KEY"</td></tr>
+        <tr><td>Exposed SQL database dumps</td><td class="ex">filetype:sql "create table users" "insert into"</td></tr>
+        <tr><td>Find admin login panels on a domain</td><td class="ex">site:example.com inurl:admin intitle:login</td></tr>
+        <tr><td>WordPress config files left public</td><td class="ex">ext:php inurl:wp-config "DB_PASSWORD"</td></tr>
+        <tr><td>phpMyAdmin instances exposed online</td><td class="ex">intitle:"phpMyAdmin" inurl:/phpmyadmin/</td></tr>
+        <tr><td>Password lists in plain text files</td><td class="ex">filetype:txt intext:"username" intext:"password"</td></tr>
+        <tr><td>Publicly accessible backup files</td><td class="ex">ext:bak OR ext:backup intitle:"index of"</td></tr>
+        <tr><td>AWS keys accidentally published</td><td class="ex">intext:"AKIA" filetype:txt OR filetype:env</td></tr>
+        <tr><td>Network device login pages</td><td class="ex">intitle:"RouterOS" inurl:winbox</td></tr>
+        <tr><td>Government PDFs on a topic</td><td class="ex">site:.gov filetype:pdf "classified" after:2022-01-01</td></tr>
+        <tr><td>Log files with error traces</td><td class="ex">ext:log intext:"php_errors" OR intext:"Fatal error"</td></tr>
+        <tr><td>Exposed camera feeds</td><td class="ex">intitle:"Live View / – AXIS" OR intitle:"Webcam 7"</td></tr>
+        <tr><td>cPanel login pages</td><td class="ex">inurl:2082 OR inurl:2083 intitle:cPanel</td></tr>
+        <tr><td>Confidential internal documents</td><td class="ex">filetype:pdf intitle:"confidential" intext:"internal use only"</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 7 -->
+  <div class="guide-section" id="ethics">
+    <h2>7. Ethics &amp; Legal Considerations</h2>
+    <div class="callout danger">
+      <strong>Warning:</strong> Accessing, downloading, or using information you discover via Google Dorking without authorisation may violate laws including the U.S. Computer Fraud and Abuse Act (CFAA), the UK Computer Misuse Act, GDPR, and equivalent legislation worldwide. Always obtain explicit written permission before using dork queries against third-party systems.
+    </div>
+    <p>Google Dorking itself is legal — you are using a public interface to query public data. However:</p>
+    <ul>
+      <li>Accessing data that is inadvertently exposed but not meant to be public may still be illegal.</li>
+      <li>Downloading, storing, or distributing exposed credentials or personal data is almost certainly illegal regardless of how you found it.</li>
+      <li>Automated scraping or mass querying may violate Google's <em>Terms of Service</em> and trigger rate-limiting or IP bans.</li>
+      <li>If you discover a vulnerability or exposed data belonging to a third party, the ethical response is <strong>responsible disclosure</strong> — notify the owner, not exploit or publicise the data.</li>
+    </ul>
+    <div class="callout">
+      <strong>Best practices:</strong> Only perform dork-based recon on your own systems or within an authorised penetration testing engagement. Document your authorisation. Report discoveries responsibly.
+    </div>
+  </div>
+
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     SAVED QUERIES PAGE
+══════════════════════════════════════════════════════════ -->
+<section class="page" id="page-saved" role="tabpanel">
+<div class="container">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+    <h2 style="font-size:1rem;font-weight:700;">💾 Saved Queries</h2>
+    <button class="btn danger" style="font-size:0.78rem;padding:5px 12px;margin-left:auto;" onclick="clearAllSaved()">🗑️ Clear All Saved</button>
+  </div>
+  <div id="savedList" class="saved-list"></div>
+</div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════
+     TOAST
+══════════════════════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  Google Dork Helper — part of <strong>dev-essentials</strong> &nbsp;|&nbsp; Client-side only, no data leaves your browser
+</footer>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+// ── Theme ──────────────────────────────────────────────────
+const themeBtn = document.getElementById('themeToggle');
+let isDark = true;
+
+function applyTheme(dark) {
+  isDark = dark;
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '🌙 Dark' : '☀️ Light';
+  localStorage.setItem('gdh-theme', dark ? 'dark' : 'light');
+}
+
+themeBtn.addEventListener('click', () => applyTheme(!isDark));
+
+(function initTheme() {
+  const saved = localStorage.getItem('gdh-theme');
+  applyTheme(saved !== 'light');
+})();
+
+// ── Tab navigation ─────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+    if (tab.dataset.page === 'saved') renderSaved();
+  });
+});
+
+// ── Search engine URL builders ─────────────────────────────
+const ENGINES = {
+  google:     q => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+  bing:       q => `https://www.bing.com/search?q=${encodeURIComponent(q)}`,
+  duckduckgo: q => `https://duckduckgo.com/?q=${encodeURIComponent(q)}`,
+  yandex:     q => `https://yandex.com/search/?text=${encodeURIComponent(q)}`,
+  yahoo:      q => `https://search.yahoo.com/search?p=${encodeURIComponent(q)}`,
+  startpage:  q => `https://www.startpage.com/search?q=${encodeURIComponent(q)}`,
+  brave:      q => `https://search.brave.com/search?q=${encodeURIComponent(q)}`,
+};
+
+function openSearch(query, engine) {
+  const q = query.trim();
+  if (!q) { showToast('Query is empty!', 'warn'); return; }
+  const fn = ENGINES[engine] || ENGINES.google;
+  window.open(fn(q), '_blank', 'noopener,noreferrer');
+}
+
+// ── Toast ──────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = type === 'warn' ? 'var(--yellow)' : type === 'err' ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── BUILDER: operator toggle ───────────────────────────────
+function toggleOp(el) {
+  // Don't toggle if user clicked inside an input/chip inside the item
+  if (event && event.target !== el &&
+    (event.target.tagName === 'INPUT' ||
+     event.target.classList.contains('chip'))) return;
+  el.classList.toggle('active');
+  buildQuery();
+}
+
+function setOpVal(chip, opName, val) {
+  const item = document.querySelector(`.op-item[data-op="${opName}"]`);
+  if (!item) return;
+  item.classList.add('active');
+  const inp = item.querySelector('.op-input input');
+  if (inp) { inp.value = val; }
+  buildQuery();
+}
+
+// ── BUILDER: generate query ────────────────────────────────
+let manualOverride = false;
+
+function tokenise(query) {
+  // Colour-code the query preview (very lightweight tokeniser)
+  return query
+    .replace(/site:(\S+)/g, '<span class="token-site">site:$1</span>')
+    .replace(/inurl:("[^"]*"|\S+)/g, '<span class="token-inurl">inurl:$1</span>')
+    .replace(/allinurl:([^\s]+(?:\s[^\s]+)*)/g,  '<span class="token-inurl">allinurl:$1</span>')
+    .replace(/intitle:("[^"]*"|\S+)/g, '<span class="token-intitle">intitle:$1</span>')
+    .replace(/allintitle:([^\s]+(?:\s[^\s]+)*)/g, '<span class="token-intitle">allintitle:$1</span>')
+    .replace(/intext:("[^"]*"|\S+)/g, '<span class="token-intext">intext:$1</span>')
+    .replace(/allintext:([^\s]+(?:\s[^\s]+)*)/g, '<span class="token-intext">allintext:$1</span>')
+    .replace(/filetype:(\S+)/g, '<span class="token-filetype">filetype:$1</span>')
+    .replace(/ext:(\S+)/g, '<span class="token-ext">ext:$1</span>');
+}
+
+function buildQuery() {
+  if (manualOverride) return;
+  const parts = [];
+
+  const all = document.getElementById('b-all').value.trim();
+  if (all) parts.push(all);
+
+  const exact = document.getElementById('b-exact').value.trim();
+  if (exact) parts.push(`"${exact}"`);
+
+  const any = document.getElementById('b-any').value.trim();
+  if (any) {
+    const words = any.trim().split(/\s+/);
+    parts.push(words.join(' OR '));
+  }
+
+  const none = document.getElementById('b-none').value.trim();
+  if (none) {
+    none.split(/\s+/).forEach(w => parts.push(`-${w}`));
+  }
+
+  // Active operator items
+  document.querySelectorAll('.op-item.active').forEach(item => {
+    const op = item.dataset.op;
+    const inp = item.querySelector('.op-input input');
+    if (!inp) return;
+    const val = inp.value.trim();
+    if (!val) return;
+
+    // Operators that take multiple space-separated values need "all" variants handled specially
+    if (['allinurl','allintitle','allintext'].includes(op)) {
+      parts.push(`${op}:${val}`);
+    } else if (op === 'inurl' || op === 'intext' || op === 'intitle') {
+      // If value has spaces, wrap in quotes unless it already is
+      const v = val.includes(' ') && !val.startsWith('"') ? `"${val}"` : val;
+      parts.push(`${op}:${v}`);
+    } else {
+      parts.push(`${op}:${val}`);
+    }
+  });
+
+  const q = parts.join(' ');
+  const preview = document.getElementById('queryPreview');
+  if (q) {
+    preview.innerHTML = tokenise(escHtml(q));
+  } else {
+    preview.innerHTML = '<span style="color:var(--muted)">Start filling fields or selecting operators…</span>';
+  }
+}
+
+function onManualInput() {
+  const val = document.getElementById('manualQuery').value.trim();
+  manualOverride = val.length > 0;
+  const preview = document.getElementById('queryPreview');
+  if (val) {
+    preview.innerHTML = tokenise(escHtml(val));
+  } else {
+    buildQuery();
+  }
+}
+
+function clearManual() {
+  document.getElementById('manualQuery').value = '';
+  manualOverride = false;
+  buildQuery();
+}
+
+function getBuilderQuery() {
+  if (manualOverride) return document.getElementById('manualQuery').value.trim();
+  // Extract text from the preview div (strip HTML tags)
+  return document.getElementById('queryPreview').innerText.trim();
+}
+
+function doSearch() {
+  openSearch(getBuilderQuery(), document.getElementById('engineSelect').value);
+}
+
+function copyQuery() {
+  const q = getBuilderQuery();
+  if (!q) { showToast('Nothing to copy', 'warn'); return; }
+  navigator.clipboard.writeText(q).then(() => showToast('Query copied!')).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = q; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Query copied!');
+  });
+}
+
+function saveQuery() {
+  const q = getBuilderQuery();
+  if (!q) { showToast('Nothing to save', 'warn'); return; }
+  const name = prompt('Enter a name for this query:', q.slice(0, 40));
+  if (name === null) return;
+  const saved = getSaved();
+  saved.push({ id: Date.now(), name: name || q.slice(0, 30), query: q });
+  setSaved(saved);
+  showToast('Query saved!');
+}
+
+function clearAll() {
+  document.querySelectorAll('#page-builder input[type=text], #page-builder textarea').forEach(i => i.value = '');
+  document.querySelectorAll('.op-item').forEach(i => i.classList.remove('active'));
+  manualOverride = false;
+  buildQuery();
+}
+
+// ── PRESETS ────────────────────────────────────────────────
+const PRESETS = {
+  'env-files':      { manual: 'ext:env "DB_PASSWORD" OR "APP_KEY" OR "SECRET"' },
+  'sql-dumps':      { manual: 'filetype:sql "CREATE TABLE" "INSERT INTO" "password"' },
+  'git-config':     { manual: 'inurl:.git/config "url = https://"' },
+  'htpasswd':       { manual: 'inurl:.htpasswd filetype:htpasswd' },
+  'aws-keys':       { manual: 'intext:"AKIA" (filetype:txt OR filetype:env OR filetype:json)' },
+  'db-backup':      { manual: '(ext:sql OR ext:bak OR ext:dump) intitle:"index of"' },
+  'open-dir':       { manual: 'intitle:"index of /" -htm -html' },
+  'open-uploads':   { manual: 'intitle:"index of" inurl:uploads' },
+  'open-backup':    { manual: 'intitle:"index of" inurl:backup' },
+  'admin-login':    { manual: 'inurl:admin intitle:login' },
+  'phpmyadmin':     { manual: 'intitle:"phpMyAdmin" inurl:/phpmyadmin/' },
+  'cpanel':         { manual: 'inurl:2082 OR inurl:2083 intitle:cPanel' },
+  'webmail':        { manual: 'inurl:webmail intitle:"Roundcube Webmail"' },
+  'confidential-pdf': { manual: 'filetype:pdf intitle:"confidential" intext:"internal use only"' },
+  'passwords-xls':  { manual: 'filetype:xls intext:"password" intext:"username"' },
+  'network-config': { manual: '(ext:cfg OR ext:conf OR ext:ini) intext:"password"' },
+  'internal-docs':  { manual: 'filetype:pdf OR filetype:doc intext:"not for distribution" intitle:"internal"' },
+  'subdomain-enum': { manual: 'site:*.example.com -www' },
+  'tech-stack':     { manual: 'site:example.com filetype:php OR filetype:asp OR filetype:aspx' },
+  'error-messages': { manual: 'site:example.com intext:"Fatal error" OR intext:"stack trace" OR intext:"Uncaught Exception"' },
+};
+
+function applyPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  document.getElementById('manualQuery').value = p.manual || '';
+  manualOverride = true;
+  document.getElementById('queryPreview').innerHTML = tokenise(escHtml(p.manual));
+  showToast('Preset loaded!');
+}
+
+// ── ADVANCED FORM ──────────────────────────────────────────
+function buildAdvQuery() {
+  const parts = [];
+
+  const all = document.getElementById('adv-all').value.trim();
+  if (all) parts.push(all);
+
+  const exact = document.getElementById('adv-exact').value.trim();
+  if (exact) {
+    const val = exact.startsWith('"') ? exact : `"${exact}"`;
+    parts.push(val);
+  }
+
+  const any = document.getElementById('adv-any').value.trim();
+  if (any) {
+    const words = any.split(/\s+/);
+    parts.push(words.join(' OR '));
+  }
+
+  const none = document.getElementById('adv-none').value.trim();
+  if (none) none.split(/\s+/).forEach(w => parts.push(`-${w}`));
+
+  const nFrom = document.getElementById('adv-num-from').value.trim();
+  const nTo   = document.getElementById('adv-num-to').value.trim();
+  if (nFrom && nTo) parts.push(`${nFrom}..${nTo}`);
+
+  const site = document.getElementById('adv-site').value.trim();
+  if (site) parts.push(`site:${site}`);
+
+  const inurl = document.getElementById('adv-inurl').value.trim();
+  if (inurl) {
+    inurl.split(/\s+/).forEach(w => parts.push(`inurl:${w}`));
+  }
+
+  const intitle = document.getElementById('adv-intitle').value.trim();
+  if (intitle) {
+    const v = intitle.includes(' ') ? `"${intitle}"` : intitle;
+    parts.push(`intitle:${v}`);
+  }
+
+  const ft = document.getElementById('adv-filetype').value;
+  if (ft) parts.push(`filetype:${ft}`);
+
+  const after = document.getElementById('adv-after').value;
+  if (after) parts.push(`after:${after}`);
+
+  const before = document.getElementById('adv-before').value;
+  if (before) parts.push(`before:${before}`);
+
+  const q = parts.join(' ');
+  const el = document.getElementById('advQueryPreview');
+  if (q) {
+    el.innerHTML = tokenise(escHtml(q));
+  } else {
+    el.innerHTML = '<span style="color:var(--muted)">Fill in the fields above…</span>';
+  }
+}
+
+function getAdvQuery() {
+  return document.getElementById('advQueryPreview').innerText.trim();
+}
+
+function doAdvSearch() {
+  openSearch(getAdvQuery(), document.getElementById('advEngineSelect').value);
+}
+
+function copyAdvQuery() {
+  const q = getAdvQuery();
+  if (!q) { showToast('Nothing to copy', 'warn'); return; }
+  navigator.clipboard.writeText(q).then(() => showToast('Query copied!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = q; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Query copied!');
+  });
+}
+
+function saveAdvQuery() {
+  const q = getAdvQuery();
+  if (!q) { showToast('Nothing to save', 'warn'); return; }
+  const name = prompt('Enter a name for this query:', q.slice(0, 40));
+  if (name === null) return;
+  const saved = getSaved();
+  saved.push({ id: Date.now(), name: name || q.slice(0, 30), query: q });
+  setSaved(saved);
+  showToast('Query saved!');
+}
+
+function clearAdv() {
+  document.querySelectorAll('#page-advanced input, #page-advanced select').forEach(el => {
+    if (el.tagName === 'SELECT') el.selectedIndex = 0;
+    else el.value = '';
+  });
+  buildAdvQuery();
+}
+
+// ── SAVED QUERIES ──────────────────────────────────────────
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('gdh-saved') || '[]'); } catch { return []; }
+}
+function setSaved(arr) {
+  localStorage.setItem('gdh-saved', JSON.stringify(arr));
+}
+
+function renderSaved() {
+  const saved = getSaved();
+  const el = document.getElementById('savedList');
+  if (!saved.length) {
+    el.innerHTML = '<div class="empty-state">No saved queries yet.<br>Use the 💾 Save Query button in the Builder or Advanced Form.</div>';
+    return;
+  }
+  el.innerHTML = saved.map(s => `
+    <div class="saved-item" id="saved-${s.id}">
+      <div class="saved-body">
+        <div class="saved-name">${escHtml(s.name)}</div>
+        <div class="saved-query">${escHtml(s.query)}</div>
+      </div>
+      <div class="saved-actions">
+        <button class="btn copy-btn" onclick="loadSaved(${s.id})">📥 Load</button>
+        <button class="btn primary copy-btn" onclick="searchSaved(${s.id})">🚀 Search</button>
+        <button class="btn copy-btn" onclick="copySaved(${s.id})">📋 Copy</button>
+        <button class="btn danger copy-btn" onclick="deleteSaved(${s.id})">🗑️</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadSaved(id) {
+  const s = getSaved().find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('manualQuery').value = s.query;
+  manualOverride = true;
+  document.getElementById('queryPreview').innerHTML = tokenise(escHtml(s.query));
+  // Switch to builder tab
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelector('[data-page=builder]').classList.add('active');
+  document.getElementById('page-builder').classList.add('active');
+  showToast('Loaded into builder!');
+}
+
+function searchSaved(id) {
+  const s = getSaved().find(x => x.id === id);
+  if (!s) return;
+  openSearch(s.query, 'google');
+}
+
+function copySaved(id) {
+  const s = getSaved().find(x => x.id === id);
+  if (!s) return;
+  navigator.clipboard.writeText(s.query).then(() => showToast('Copied!')).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = s.query; document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta); showToast('Copied!');
+  });
+}
+
+function deleteSaved(id) {
+  const saved = getSaved().filter(x => x.id !== id);
+  setSaved(saved);
+  renderSaved();
+  showToast('Deleted');
+}
+
+function clearAllSaved() {
+  if (!confirm('Delete all saved queries? This cannot be undone.')) return;
+  setSaved([]);
+  renderSaved();
+  showToast('All saved queries cleared');
+}
+
+// ── HTML escape (XSS-safe) ─────────────────────────────────
+function escHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+</script>
+</body>
+</html>
