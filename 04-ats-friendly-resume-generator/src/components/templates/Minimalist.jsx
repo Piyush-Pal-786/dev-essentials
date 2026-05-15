@@ -143,12 +143,84 @@ function renderSection(key, data, styles, accent, font) {
   if (key === 'certifications' && data.certifications.length) {
     return (
       <View key="certifications">
-        <Text style={styles.sectionHeader}>{SECTION_LABELS.certifications}</Text>
+        <Text style={styles.sectionHeader}>{data.certificationsLabel || SECTION_LABELS.certifications}</Text>
         <View style={styles.divider} />
         {data.certifications.map((c) => (
           <View key={c.id} style={styles.certRow}>
             <Text style={styles.certName}>{c.name}</Text>
             <Text style={styles.certMeta}>{[c.issuer, c.date].filter(Boolean).join(' · ')}</Text>
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'awards' && data.awards?.items?.length) {
+    return (
+      <View key="awards">
+        <Text style={styles.sectionHeader}>{data.awards.label || 'Awards & Honors'}</Text>
+        <View style={styles.divider} />
+        {data.awards.items.map((a) => (
+          <View key={a.id} style={{ marginBottom: 9 }}>
+            <View style={styles.row}>
+              <Text style={styles.bold}>{a.title}</Text>
+              {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+            </View>
+            {a.bullets.filter((b) => b.trim()).map((b, i) => {
+              const segs = parseInlineMarkdown(b)
+              return (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>–</Text>
+                  <Text style={styles.bulletText}>
+                    {segs.map((s, si) => (
+                      <Text key={si} style={{
+                        ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                          : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                          : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                          : {}),
+                        ...(s.underline ? { textDecoration: 'underline' } : {}),
+                      }}>{s.text}</Text>
+                    ))}
+                  </Text>
+                </View>
+              )
+            })}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'activities' && data.activities?.items?.length) {
+    return (
+      <View key="activities">
+        <Text style={styles.sectionHeader}>{data.activities.label || 'Activities'}</Text>
+        <View style={styles.divider} />
+        {data.activities.items.map((a) => (
+          <View key={a.id} style={{ marginBottom: 9 }}>
+            <View style={styles.row}>
+              <Text style={styles.bold}>{a.title}</Text>
+              {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+            </View>
+            {a.bullets.filter((b) => b.trim()).map((b, i) => {
+              const segs = parseInlineMarkdown(b)
+              return (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>–</Text>
+                  <Text style={styles.bulletText}>
+                    {segs.map((s, si) => (
+                      <Text key={si} style={{
+                        ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                          : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                          : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                          : {}),
+                        ...(s.underline ? { textDecoration: 'underline' } : {}),
+                      }}>{s.text}</Text>
+                    ))}
+                  </Text>
+                </View>
+              )
+            })}
           </View>
         ))}
       </View>
@@ -161,7 +233,7 @@ function renderSection(key, data, styles, accent, font) {
 export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helvetica', sectionOrder }) {
   const styles = mk(font, accentColor)
   const { personal, summary } = data
-  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
+  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'awards', 'activities']
 
   const contactItems = [
     { text: personal.email },

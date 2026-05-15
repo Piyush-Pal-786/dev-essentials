@@ -149,7 +149,7 @@ function renderSection(key, data, styles, font) {
   if (key === 'certifications' && data.certifications.length) {
     return (
       <View key="certifications">
-        <Text style={styles.sectionHeader}>{SECTION_LABELS.certifications}</Text>
+        <Text style={styles.sectionHeader}>{data.certificationsLabel || SECTION_LABELS.certifications}</Text>
         {data.certifications.map((c) => (
           <View key={c.id} style={styles.certRow}>
             <Text style={styles.certName}>{c.name}</Text>
@@ -162,13 +162,51 @@ function renderSection(key, data, styles, font) {
     )
   }
 
+  if (key === 'awards' && data.awards?.items?.length) {
+    return (
+      <View key="awards">
+        <Text style={styles.sectionHeader}>{data.awards.label || 'Awards & Honors'}</Text>
+        {data.awards.items.map((a) => (
+          <View key={a.id} style={{ marginBottom: 8 }}>
+            <View style={styles.row}>
+              <Text style={styles.roleCompany}>{a.title}</Text>
+              {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+            </View>
+            {a.bullets.filter((b) => b.trim()).map((b, i) => (
+              <Bullet key={i} text={b} styles={styles} font={font} />
+            ))}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'activities' && data.activities?.items?.length) {
+    return (
+      <View key="activities">
+        <Text style={styles.sectionHeader}>{data.activities.label || 'Activities'}</Text>
+        {data.activities.items.map((a) => (
+          <View key={a.id} style={{ marginBottom: 8 }}>
+            <View style={styles.row}>
+              <Text style={styles.roleCompany}>{a.title}</Text>
+              {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+            </View>
+            {a.bullets.filter((b) => b.trim()).map((b, i) => (
+              <Bullet key={i} text={b} styles={styles} font={font} />
+            ))}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
   return null
 }
 
 export function ClassicTemplate({ data, accentColor = '#2563eb', font = 'Helvetica', sectionOrder }) {
   const styles = mk(font, accentColor)
   const { personal, summary } = data
-  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
+  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'awards', 'activities']
 
   const contactItems = [
     { text: personal.email },

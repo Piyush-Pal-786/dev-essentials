@@ -24,10 +24,20 @@ function CertCard({ cert, onUpdate, onRemove }) {
 }
 
 export function Certifications() {
-  const { resumeData, addCertification, updateCertification, removeCertification } = useResumeStore()
+  const { resumeData, setCertificationsLabel, addCertification, updateCertification, removeCertification } = useResumeStore()
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="rounded-xl border border-slate-700/60 bg-slate-800/30 p-3">
+        <Input
+          label="Section Heading"
+          value={resumeData.certificationsLabel ?? 'Certifications'}
+          onChange={(e) => setCertificationsLabel(e.target.value)}
+          placeholder="Certifications"
+          hint="This label appears as the section title in your resume"
+        />
+      </div>
+
       {resumeData.certifications.length === 0 && (
         <p className="text-sm text-slate-500 text-center py-6">
           No certifications added yet. Click below to add one.

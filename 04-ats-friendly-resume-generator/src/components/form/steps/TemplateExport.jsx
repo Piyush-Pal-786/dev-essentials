@@ -43,11 +43,18 @@ export function TemplateExport({ onOpenExport }) {
   const { ui, setUI, setSectionOrder } = useResumeStore()
   const sensors = useSensors(useSensor(PointerSensor))
 
+  // Ensure any newly-added section keys are present in the stored order
+  const ALL_SECTIONS = Object.keys(SECTION_LABELS)
+  const effectiveOrder = [
+    ...ui.sectionOrder,
+    ...ALL_SECTIONS.filter((k) => !ui.sectionOrder.includes(k)),
+  ]
+
   const handleDragEnd = ({ active, over }) => {
     if (over && active.id !== over.id) {
-      const oldIdx = ui.sectionOrder.indexOf(active.id)
-      const newIdx = ui.sectionOrder.indexOf(over.id)
-      setSectionOrder(arrayMove(ui.sectionOrder, oldIdx, newIdx))
+      const oldIdx = effectiveOrder.indexOf(active.id)
+      const newIdx = effectiveOrder.indexOf(over.id)
+      setSectionOrder(arrayMove(effectiveOrder, oldIdx, newIdx))
     }
   }
 
@@ -129,9 +136,9 @@ export function TemplateExport({ onOpenExport }) {
           Section Order (drag to reorder)
         </p>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={ui.sectionOrder} strategy={verticalListSortingStrategy}>
+          <SortableContext items={effectiveOrder} strategy={verticalListSortingStrategy}>
             <div className="flex flex-col gap-2">
-              {ui.sectionOrder.map((id) => (
+              {effectiveOrder.map((id) => (
                 <SortableSection key={id} id={id} />
               ))}
             </div>

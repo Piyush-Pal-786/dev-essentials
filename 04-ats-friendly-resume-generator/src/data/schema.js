@@ -19,6 +19,9 @@ export const defaultResumeData = {
   skills: [],
   projects: [],
   certifications: [],
+  certificationsLabel: 'Certifications',
+  awards: { label: 'Awards & Honors', items: [] },
+  activities: { label: 'Activities', items: [] },
 }
 
 export const defaultUI = {
@@ -27,7 +30,7 @@ export const defaultUI = {
   theme: 'dark',
   accentColor: '#3b82f6',
   font: 'Helvetica',
-  sectionOrder: ['experience', 'education', 'skills', 'projects', 'certifications'],
+  sectionOrder: ['experience', 'education', 'skills', 'projects', 'certifications', 'awards', 'activities'],
 }
 
 // Human-readable labels for section keys (used in reorder UI & PDF headers)
@@ -37,6 +40,8 @@ export const SECTION_LABELS = {
   skills: 'Skills',
   projects: 'Projects',
   certifications: 'Certifications',
+  awards: 'Awards & Honors',
+  activities: 'Activities',
 }
 
 // Font options (all built into @react-pdf/renderer — no CDN required)

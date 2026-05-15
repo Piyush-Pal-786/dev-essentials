@@ -56,7 +56,7 @@ const mk = (font, accent) =>
 export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetica', sectionOrder }) {
   const styles = mk(font, accentColor)
   const { personal, summary } = data
-  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
+  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications', 'awards', 'activities']
 
   // Sidebar holds: contact, skills, certifications
   // Main holds: summary, experience, education, projects
@@ -114,7 +114,7 @@ export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetic
             if (key === 'certifications' && data.certifications.length) {
               return (
                 <View key="certifications">
-                  <Text style={styles.sideSectionHeader}>Certifications</Text>
+                  <Text style={styles.sideSectionHeader}>{data.certificationsLabel || 'Certifications'}</Text>
                   {data.certifications.map((c) => (
                     <View key={c.id} style={{ marginBottom: 4 }}>
                       <Text style={styles.sideItem}>{c.name}</Text>
@@ -207,6 +207,74 @@ export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetic
                         <Text style={styles.projMeta}>Tech: {p.techStack.join(', ')}</Text>
                       ) : null}
                       {p.url ? <Text style={{ ...styles.projMeta, color: accentColor }}>{p.url}</Text> : null}
+                    </View>
+                  ))}
+                </View>
+              )
+            }
+            if (key === 'awards' && data.awards?.items?.length) {
+              return (
+                <View key="awards">
+                  <Text style={styles.mainSectionHeader}>{data.awards.label || 'Awards & Honors'}</Text>
+                  {data.awards.items.map((a) => (
+                    <View key={a.id} style={{ marginBottom: 8 }}>
+                      <View style={styles.row}>
+                        <Text style={styles.bold}>{a.title}</Text>
+                        {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+                      </View>
+                      {a.bullets.filter((b) => b.trim()).map((b, i) => {
+                        const segs = parseInlineMarkdown(b)
+                        return (
+                          <View key={i} style={styles.bulletRow}>
+                            <Text style={styles.bulletDot}>•</Text>
+                            <Text style={styles.bulletText}>
+                              {segs.map((s, si) => (
+                                <Text key={si} style={{
+                                  ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                                    : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                                    : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                                    : {}),
+                                  ...(s.underline ? { textDecoration: 'underline' } : {}),
+                                }}>{s.text}</Text>
+                              ))}
+                            </Text>
+                          </View>
+                        )
+                      })}
+                    </View>
+                  ))}
+                </View>
+              )
+            }
+            if (key === 'activities' && data.activities?.items?.length) {
+              return (
+                <View key="activities">
+                  <Text style={styles.mainSectionHeader}>{data.activities.label || 'Activities'}</Text>
+                  {data.activities.items.map((a) => (
+                    <View key={a.id} style={{ marginBottom: 8 }}>
+                      <View style={styles.row}>
+                        <Text style={styles.bold}>{a.title}</Text>
+                        {a.subtitle ? <Text style={styles.dates}>{a.subtitle}</Text> : null}
+                      </View>
+                      {a.bullets.filter((b) => b.trim()).map((b, i) => {
+                        const segs = parseInlineMarkdown(b)
+                        return (
+                          <View key={i} style={styles.bulletRow}>
+                            <Text style={styles.bulletDot}>•</Text>
+                            <Text style={styles.bulletText}>
+                              {segs.map((s, si) => (
+                                <Text key={si} style={{
+                                  ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                                    : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                                    : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                                    : {}),
+                                  ...(s.underline ? { textDecoration: 'underline' } : {}),
+                                }}>{s.text}</Text>
+                              ))}
+                            </Text>
+                          </View>
+                        )
+                      })}
                     </View>
                   ))}
                 </View>

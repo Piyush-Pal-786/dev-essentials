@@ -6,6 +6,8 @@ const STEPS = [
   'Skills',
   'Projects',
   'Certifications',
+  'Awards',
+  'Activities',
   'Export',
 ]
 

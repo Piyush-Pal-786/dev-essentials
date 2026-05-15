@@ -159,6 +159,96 @@ export const useResumeStore = create(
             certifications: s.resumeData.certifications.filter((c) => c.id !== id),
           },
         })),
+      setCertificationsLabel: (value) =>
+        set((s) => ({ resumeData: { ...s.resumeData, certificationsLabel: value } })),
+
+      // ── Awards ────────────────────────────────────────────────────────
+      setAwardsLabel: (value) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            awards: { ...s.resumeData.awards, label: value },
+          },
+        })),
+      addAward: () =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            awards: {
+              ...s.resumeData.awards,
+              items: [
+                ...(s.resumeData.awards?.items || []),
+                { id: genId(), title: '', subtitle: '', bullets: [''] },
+              ],
+            },
+          },
+        })),
+      updateAward: (id, field, value) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            awards: {
+              ...s.resumeData.awards,
+              items: (s.resumeData.awards?.items || []).map((a) =>
+                a.id === id ? { ...a, [field]: value } : a
+              ),
+            },
+          },
+        })),
+      removeAward: (id) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            awards: {
+              ...s.resumeData.awards,
+              items: (s.resumeData.awards?.items || []).filter((a) => a.id !== id),
+            },
+          },
+        })),
+
+      // ── Activities ────────────────────────────────────────────────────
+      setActivitiesLabel: (value) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            activities: { ...s.resumeData.activities, label: value },
+          },
+        })),
+      addActivity: () =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            activities: {
+              ...s.resumeData.activities,
+              items: [
+                ...(s.resumeData.activities?.items || []),
+                { id: genId(), title: '', subtitle: '', bullets: [''] },
+              ],
+            },
+          },
+        })),
+      updateActivity: (id, field, value) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            activities: {
+              ...s.resumeData.activities,
+              items: (s.resumeData.activities?.items || []).map((a) =>
+                a.id === id ? { ...a, [field]: value } : a
+              ),
+            },
+          },
+        })),
+      removeActivity: (id) =>
+        set((s) => ({
+          resumeData: {
+            ...s.resumeData,
+            activities: {
+              ...s.resumeData.activities,
+              items: (s.resumeData.activities?.items || []).filter((a) => a.id !== id),
+            },
+          },
+        })),
 
       // ── UI ────────────────────────────────────────────────────────────
       setUI: (field, value) =>
@@ -172,6 +262,22 @@ export const useResumeStore = create(
     }),
     {
       name: 'resume-storage',
+      version: 2,
+      migrate: (persisted, version) => {
+        // v1 → v2: add awards, activities, certificationsLabel
+        if (version < 2) {
+          const rd = persisted.resumeData || {}
+          if (!rd.certificationsLabel) rd.certificationsLabel = 'Certifications'
+          if (!rd.awards)              rd.awards = { label: 'Awards & Honors', items: [] }
+          if (!rd.activities)          rd.activities = { label: 'Activities', items: [] }
+          persisted.resumeData = rd
+          const order = persisted.ui?.sectionOrder || []
+          if (!order.includes('awards'))     order.push('awards')
+          if (!order.includes('activities')) order.push('activities')
+          persisted.ui = { ...(persisted.ui || {}), sectionOrder: order }
+        }
+        return persisted
+      },
       partialize: (state) => ({ resumeData: state.resumeData, ui: state.ui }),
     }
   )

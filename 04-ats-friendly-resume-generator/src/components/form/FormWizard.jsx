@@ -8,6 +8,8 @@ import { Education } from './steps/Education'
 import { Skills } from './steps/Skills'
 import { Projects } from './steps/Projects'
 import { Certifications } from './steps/Certifications'
+import { Awards } from './steps/Awards'
+import { Activities } from './steps/Activities'
 import { TemplateExport } from './steps/TemplateExport'
 
 const STEPS = [
@@ -17,8 +19,10 @@ const STEPS = [
   { title: 'Education',              Component: Education },
   { title: 'Skills',                 Component: Skills },
   { title: 'Projects',               Component: Projects },
-  { title: 'Certifications',         Component: Certifications },
-  { title: 'Template & Export',      Component: null }, // handled below
+  { title: 'Certifications',                  Component: Certifications },
+  { title: 'Awards & Honors (optional)',       Component: Awards },
+  { title: 'Activities (optional)',            Component: Activities },
+  { title: 'Template & Export',               Component: null }, // handled below
 ]
 
 export function FormWizard({ onOpenExport }) {

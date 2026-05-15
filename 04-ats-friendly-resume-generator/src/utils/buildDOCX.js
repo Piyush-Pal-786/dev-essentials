@@ -165,7 +165,7 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
     }
 
     if (key === 'certifications' && resumeData.certifications.length) {
-      children.push(heading(SECTION_LABELS.certifications))
+      children.push(heading(resumeData.certificationsLabel || SECTION_LABELS.certifications))
       for (const c of resumeData.certifications) {
         children.push(
           subheading(
@@ -173,6 +173,26 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
             c.date || ''
           )
         )
+      }
+    }
+
+    if (key === 'awards' && resumeData.awards?.items?.length) {
+      children.push(heading(resumeData.awards.label || SECTION_LABELS.awards))
+      for (const a of resumeData.awards.items) {
+        children.push(subheading(a.title, a.subtitle || ''))
+        for (const b of a.bullets.filter((b) => b.trim())) {
+          children.push(...bullet(b))
+        }
+      }
+    }
+
+    if (key === 'activities' && resumeData.activities?.items?.length) {
+      children.push(heading(resumeData.activities.label || SECTION_LABELS.activities))
+      for (const a of resumeData.activities.items) {
+        children.push(subheading(a.title, a.subtitle || ''))
+        for (const b of a.bullets.filter((b) => b.trim())) {
+          children.push(...bullet(b))
+        }
       }
     }
   }
