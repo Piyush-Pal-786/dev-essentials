@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer'
-import { SECTION_LABELS, FONT_BOLD } from '../../data/schema'
+import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
+import { parseInlineMarkdown } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -43,14 +44,27 @@ const mk = (font, accent) =>
     projMeta: { fontSize: 9, color: '#6b7280' },
   })
 
-const Bullet = ({ text, styles }) => (
-  <View style={styles.bulletRow}>
-    <Text style={styles.bulletDot}>•</Text>
-    <Text style={styles.bulletText}>{text}</Text>
-  </View>
-)
+const Bullet = ({ text, styles, font }) => {
+  const segs = parseInlineMarkdown(text)
+  return (
+    <View style={styles.bulletRow}>
+      <Text style={styles.bulletDot}>•</Text>
+      <Text style={styles.bulletText}>
+        {segs.map((s, i) => (
+          <Text key={i} style={{
+            ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+              : s.bold             ? { fontFamily: FONT_BOLD[font] }
+              : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+              : {}),
+            ...(s.underline ? { textDecoration: 'underline' } : {}),
+          }}>{s.text}</Text>
+        ))}
+      </Text>
+    </View>
+  )
+}
 
-function renderSection(key, data, styles) {
+function renderSection(key, data, styles, font) {
   if (key === 'experience' && data.experience.length) {
     return (
       <View key="experience">
@@ -64,7 +78,7 @@ function renderSection(key, data, styles) {
               </Text>
             </View>
             {e.bullets.filter((b) => b.trim()).map((b, i) => (
-              <Bullet key={i} text={b} styles={styles} />
+              <Bullet key={i} text={b} styles={styles} font={font} />
             ))}
           </View>
         ))}
@@ -184,7 +198,7 @@ export function ClassicTemplate({ data, accentColor = '#2563eb', font = 'Helveti
         ) : null}
 
         {/* Dynamic sections */}
-        {order.map((key) => renderSection(key, data, styles))}
+        {order.map((key) => renderSection(key, data, styles, font))}
       </Page>
     </Document>
   )

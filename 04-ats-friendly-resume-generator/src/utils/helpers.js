@@ -14,6 +14,37 @@ export const downloadBlob = (blob, filename) => {
 export const safeFilename = (name) =>
   (name || 'resume').replace(/[^a-z0-9_\-. ]/gi, '_').trim() || 'resume'
 
+/**
+ * Parse a subset of inline Markdown into a flat list of styled segments.
+ * Supported syntax:
+ *   ***bold italic***  →  bold + italic
+ *   **bold**           →  bold
+ *   *italic* _italic_  →  italic
+ *   __underline__      →  underline
+ * Newlines (\n) are preserved as-is in each segment's text.
+ * Returns an array of { text, bold, italic, underline }.
+ */
+export const parseInlineMarkdown = (text) => {
+  const segments = []
+  // Order matters: *** before ** before __ before * and _
+  const re = /\*\*\*(.+?)\*\*\*|\*\*(.+?)\*\*|__(.+?)__|\*(.+?)\*|_(.+?)_/g
+  let last = 0
+  let match
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last)
+      segments.push({ text: text.slice(last, match.index), bold: false, italic: false, underline: false })
+    if      (match[1] !== undefined) segments.push({ text: match[1], bold: true,  italic: true,  underline: false })
+    else if (match[2] !== undefined) segments.push({ text: match[2], bold: true,  italic: false, underline: false })
+    else if (match[3] !== undefined) segments.push({ text: match[3], bold: false, italic: false, underline: true  })
+    else if (match[4] !== undefined) segments.push({ text: match[4], bold: false, italic: true,  underline: false })
+    else if (match[5] !== undefined) segments.push({ text: match[5], bold: false, italic: true,  underline: false })
+    last = match.index + match[0].length
+  }
+  if (last < text.length)
+    segments.push({ text: text.slice(last), bold: false, italic: false, underline: false })
+  return segments.length ? segments : [{ text, bold: false, italic: false, underline: false }]
+}
+
 /** Compute ATS score items from resumeData */
 export const getATSChecks = (resumeData) => {
   const { personal, summary, experience, education, skills, projects } = resumeData

@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
-import { SECTION_LABELS, FONT_BOLD } from '../../data/schema'
+import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
+import { parseInlineMarkdown } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -47,7 +48,7 @@ const mk = (font, accent) =>
     certMeta: { fontSize: 8.5, color: '#888888' },
   })
 
-function renderSection(key, data, styles, accent) {
+function renderSection(key, data, styles, accent, font) {
   if (key === 'experience' && data.experience.length) {
     return (
       <View key="experience">
@@ -61,12 +62,25 @@ function renderSection(key, data, styles, accent) {
                 {[e.startDate, e.current ? 'Present' : e.endDate].filter(Boolean).join(' – ')}
               </Text>
             </View>
-            {e.bullets.filter((b) => b.trim()).map((b, i) => (
-              <View key={i} style={styles.bulletRow}>
-                <Text style={styles.bulletDot}>–</Text>
-                <Text style={styles.bulletText}>{b}</Text>
-              </View>
-            ))}
+            {e.bullets.filter((b) => b.trim()).map((b, i) => {
+              const segs = parseInlineMarkdown(b)
+              return (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={styles.bulletDot}>–</Text>
+                  <Text style={styles.bulletText}>
+                    {segs.map((s, si) => (
+                      <Text key={si} style={{
+                        ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                          : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                          : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                          : {}),
+                        ...(s.underline ? { textDecoration: 'underline' } : {}),
+                      }}>{s.text}</Text>
+                    ))}
+                  </Text>
+                </View>
+              )
+            })}
           </View>
         ))}
       </View>
@@ -183,7 +197,7 @@ export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helv
         ) : null}
 
         {/* Dynamic sections */}
-        {order.map((key) => renderSection(key, data, styles, accentColor))}
+        {order.map((key) => renderSection(key, data, styles, accentColor, font))}
       </Page>
     </Document>
   )

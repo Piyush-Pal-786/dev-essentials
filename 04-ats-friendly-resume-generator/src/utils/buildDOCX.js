@@ -11,6 +11,7 @@ import {
   UnderlineType,
 } from 'docx'
 import { SECTION_LABELS } from '../data/schema'
+import { parseInlineMarkdown } from './helpers'
 
 const heading = (text) =>
   new Paragraph({
@@ -30,12 +31,24 @@ const subheading = (left, right) =>
     spacing: { after: 40 },
   })
 
-const bullet = (text) =>
-  new Paragraph({
-    bullet: { level: 0 },
-    children: [new TextRun({ text, size: 18 })],
-    spacing: { after: 40 },
+const bullet = (text) => {
+  // Parse inline markdown; split on \n to emit separate paragraphs
+  const lines = text.split('\n')
+  return lines.map((line, li) => {
+    const segs = parseInlineMarkdown(line)
+    return new Paragraph({
+      bullet: { level: 0 },
+      children: segs.map((s) => new TextRun({
+        text: s.text,
+        bold: s.bold,
+        italics: s.italic,
+        underline: s.underline ? { type: UnderlineType.SINGLE } : undefined,
+        size: 18,
+      })),
+      spacing: { after: li < lines.length - 1 ? 0 : 40 },
+    })
   })
+}
 
 const contactLine = (fields) =>
   new Paragraph({
@@ -105,7 +118,7 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
           )
         )
         for (const b of e.bullets.filter((b) => b.trim())) {
-          children.push(bullet(b))
+          children.push(...bullet(b))
         }
       }
     }
@@ -116,7 +129,7 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
         const degreeStr = [ed.degree, ed.field].filter(Boolean).join(' in ')
         const dateStr = [ed.startDate, ed.endDate].filter(Boolean).join(' – ')
         children.push(subheading([degreeStr, ed.institution].filter(Boolean).join(', '), dateStr))
-        if (ed.gpa) children.push(bullet(`GPA: ${ed.gpa}`))
+        if (ed.gpa) children.push(...bullet(`GPA: ${ed.gpa}`))
       }
     }
 
@@ -145,9 +158,9 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
             spacing: { after: 40 },
           })
         )
-        if (p.description) children.push(bullet(p.description))
-        if (p.techStack.length) children.push(bullet(`Tech: ${p.techStack.join(', ')}`))
-        if (p.url) children.push(bullet(`URL: ${p.url}`))
+        if (p.description) children.push(...bullet(p.description))
+        if (p.techStack.length) children.push(...bullet(`Tech: ${p.techStack.join(', ')}`))
+        if (p.url) children.push(...bullet(`URL: ${p.url}`))
       }
     }
 

@@ -49,3 +49,17 @@ export const FONT_BOLD = {
   'Times-Roman': 'Times-Bold',
   'Courier':     'Courier-Bold',
 }
+
+// Italic variant map
+export const FONT_ITALIC = {
+  'Helvetica':   'Helvetica-Oblique',
+  'Times-Roman': 'Times-Italic',
+  'Courier':     'Courier-Oblique',
+}
+
+// Bold-italic variant map
+export const FONT_BOLD_ITALIC = {
+  'Helvetica':   'Helvetica-BoldOblique',
+  'Times-Roman': 'Times-BoldItalic',
+  'Courier':     'Courier-BoldOblique',
+}

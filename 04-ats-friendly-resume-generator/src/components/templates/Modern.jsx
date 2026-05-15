@@ -1,5 +1,6 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
-import { SECTION_LABELS, FONT_BOLD } from '../../data/schema'
+import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
+import { parseInlineMarkdown } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -148,12 +149,25 @@ export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetic
                           {[e.startDate, e.current ? 'Present' : e.endDate].filter(Boolean).join(' – ')}
                         </Text>
                       </View>
-                      {e.bullets.filter((b) => b.trim()).map((b, i) => (
-                        <View key={i} style={styles.bulletRow}>
-                          <Text style={styles.bulletDot}>•</Text>
-                          <Text style={styles.bulletText}>{b}</Text>
-                        </View>
-                      ))}
+                      {e.bullets.filter((b) => b.trim()).map((b, i) => {
+                          const segs = parseInlineMarkdown(b)
+                          return (
+                            <View key={i} style={styles.bulletRow}>
+                              <Text style={styles.bulletDot}>•</Text>
+                              <Text style={styles.bulletText}>
+                                {segs.map((s, si) => (
+                                  <Text key={si} style={{
+                                    ...(s.bold && s.italic ? { fontFamily: FONT_BOLD_ITALIC[font] }
+                                      : s.bold             ? { fontFamily: FONT_BOLD[font] }
+                                      : s.italic           ? { fontFamily: FONT_ITALIC[font] }
+                                      : {}),
+                                    ...(s.underline ? { textDecoration: 'underline' } : {}),
+                                  }}>{s.text}</Text>
+                                ))}
+                              </Text>
+                            </View>
+                          )
+                        })}
                     </View>
                   ))}
                 </View>
