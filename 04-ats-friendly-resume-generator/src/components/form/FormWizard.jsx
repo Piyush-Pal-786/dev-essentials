@@ -28,6 +28,7 @@ export function FormWizard({ onOpenExport }) {
   const isLast  = step === STEPS.length - 1
 
   const go = (n) => setUI('activeStep', Math.max(0, Math.min(STEPS.length - 1, step + n)))
+  const goTo = (i) => setUI('activeStep', i)
 
   const { title, Component } = STEPS[step]
 
@@ -35,7 +36,7 @@ export function FormWizard({ onOpenExport }) {
     <div className="flex flex-col h-full">
       {/* Stepper */}
       <div className="px-4 pt-4 pb-3 border-b border-slate-700">
-        <StepperBar activeStep={step} />
+        <StepperBar activeStep={step} onStepClick={goTo} />
       </div>
 
       {/* Step content */}
@@ -47,18 +48,16 @@ export function FormWizard({ onOpenExport }) {
         }
       </div>
 
-      {/* Navigation */}
-      {!isLast && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700">
-          <Button variant="secondary" onClick={() => go(-1)} disabled={isFirst}>
-            ← Previous
-          </Button>
-          <span className="text-xs text-slate-500">{step + 1} / {STEPS.length}</span>
-          <Button onClick={() => go(1)}>
-            {step === STEPS.length - 2 ? 'Finish →' : 'Next →'}
-          </Button>
-        </div>
-      )}
+      {/* Navigation — always visible so user can move freely between any steps */}
+      <div className="flex items-center justify-between px-4 py-3 border-t border-slate-700">
+        <Button variant="secondary" onClick={() => go(-1)} disabled={isFirst}>
+          ← Previous
+        </Button>
+        <span className="text-xs text-slate-500">{step + 1} / {STEPS.length}</span>
+        <Button onClick={() => go(1)} disabled={isLast}>
+          {step === STEPS.length - 2 ? 'Finish →' : 'Next →'}
+        </Button>
+      </div>
     </div>
   )
 }
