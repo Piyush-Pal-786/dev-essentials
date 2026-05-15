@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { pdf } from '@react-pdf/renderer'
 import { useResumeStore } from '../../store/useResumeStore'
 import { TEMPLATES } from '../templates'
@@ -28,12 +28,9 @@ function ExportButton({ icon, label, description, onClick, loading }) {
 export function ExportModal({ open, onClose }) {
   const resumeData = useResumeStore((s) => s.resumeData)
   const ui         = useResumeStore((s) => s.ui)
-  const loadResume = useResumeStore((s) => s.loadResume)
-  const importRef  = useRef(null)
 
   const [loadingPDF,  setLoadingPDF]  = useState(false)
   const [loadingDOCX, setLoadingDOCX] = useState(false)
-  const [importError, setImportError] = useState('')
 
   const filename = safeFilename(resumeData.personal.name)
 
@@ -70,31 +67,8 @@ export function ExportModal({ open, onClose }) {
     downloadBlob(blob, `${filename}.resume.json`)
   }
 
-  const handleImport = (e) => {
-    setImportError('')
-    const file = e.target.files[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      try {
-        const data = JSON.parse(ev.target.result)
-        if (typeof data?.personal === 'object') {
-          loadResume(data)
-          onClose()
-        } else {
-          setImportError('Invalid resume JSON — missing expected fields.')
-        }
-      } catch {
-        setImportError('Could not parse file. Make sure it is a valid .resume.json.')
-      }
-      // Reset so same file can be re-imported
-      e.target.value = ''
-    }
-    reader.readAsText(file)
-  }
-
   return (
-    <Modal title="Export / Import Resume" open={open} onClose={onClose} maxWidth="max-w-md">
+    <Modal title="Export Resume" open={open} onClose={onClose} maxWidth="max-w-md">
       <div className="flex flex-col gap-3">
         <ExportButton
           icon="📄"
@@ -117,25 +91,6 @@ export function ExportModal({ open, onClose }) {
           onClick={handleJSON}
           loading={false}
         />
-
-        <div className="border-t border-slate-700 pt-3 mt-1">
-          <p className="text-xs text-slate-400 mb-2">Import a previously saved <code>.resume.json</code> file:</p>
-          <Button
-            variant="secondary"
-            onClick={() => importRef.current?.click()}
-            className="w-full justify-center"
-          >
-            📂 Import JSON
-          </Button>
-          <input
-            ref={importRef}
-            type="file"
-            accept=".json,.resume.json"
-            onChange={handleImport}
-            className="hidden"
-          />
-          {importError && <p className="text-xs text-red-400 mt-2">{importError}</p>}
-        </div>
       </div>
     </Modal>
   )
