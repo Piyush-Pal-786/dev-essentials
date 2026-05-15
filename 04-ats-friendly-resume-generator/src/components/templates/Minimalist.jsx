@@ -9,9 +9,9 @@ const mk = (font, accent) =>
     },
     name: {
       fontSize: 28, fontFamily: FONT_BOLD[font], color: '#111111',
-      letterSpacing: 1, marginBottom: 2,
+      letterSpacing: 1, lineHeight: 1, marginBottom: 8,
     },
-    jobTitle: { fontSize: 11, color: '#777777', letterSpacing: 0.3, marginBottom: 6 },
+    jobTitle: { fontSize: 11, color: '#777777', letterSpacing: 0.3, lineHeight: 1, marginBottom: 10 },
     contactRow: {
       flexDirection: 'row', flexWrap: 'wrap', fontSize: 8.5,
       color: '#888888', marginBottom: 22,
@@ -158,8 +158,10 @@ export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helv
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <Text style={styles.name}>{personal.name || 'Your Name'}</Text>
-        {personal.title ? <Text style={styles.jobTitle}>{personal.title}</Text> : null}
+        <View><Text style={styles.name}>{personal.name || 'Your Name'}</Text></View>
+        {personal.title
+          ? <View><Text style={styles.jobTitle}>{personal.title}</Text></View>
+          : null}
         <View style={styles.accentLine} />
 
         <View style={styles.contactRow}>

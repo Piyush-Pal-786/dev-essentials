@@ -8,9 +8,10 @@ const mk = (font, accent) =>
       fontFamily: font, fontSize: 10, color: '#2d2d2d', lineHeight: 1.45,
     },
     name: {
-      fontSize: 24, fontFamily: FONT_BOLD[font], color: '#111827', marginBottom: 3,
+      fontSize: 24, fontFamily: FONT_BOLD[font], color: '#111827',
+      lineHeight: 1, marginBottom: 6,
     },
-    jobTitle: { fontSize: 12, color: accent, marginBottom: 8 },
+    jobTitle: { fontSize: 12, color: accent, lineHeight: 1, marginBottom: 10 },
     contactRow: {
       flexDirection: 'row', flexWrap: 'wrap', marginBottom: 16,
       fontSize: 9, color: '#4b5563',
@@ -164,8 +165,10 @@ export function ClassicTemplate({ data, accentColor = '#2563eb', font = 'Helveti
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
-        <Text style={styles.name}>{personal.name || 'Your Name'}</Text>
-        {personal.title ? <Text style={styles.jobTitle}>{personal.title}</Text> : null}
+        <View><Text style={styles.name}>{personal.name || 'Your Name'}</Text></View>
+        {personal.title
+          ? <View><Text style={styles.jobTitle}>{personal.title}</Text></View>
+          : null}
         <View style={styles.contactRow}>
           {contactParts.map((c, i) => (
             <Text key={i} style={styles.contactItem}>{c}</Text>
