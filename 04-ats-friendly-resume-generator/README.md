@@ -121,3 +121,18 @@ Deploy the `dist/` folder to any static host (GitHub Pages, Netlify, Vercel, etc
 ## Privacy
 
 All data stays in your browser. Nothing is sent to any server. The app works fully offline once loaded or installed as a PWA.
+
+## Install as a Progressive Web App (PWA)
+
+The app is PWA-ready out of the box. Once installed it runs in its own window with no browser chrome, loads instantly, and works fully offline.
+
+### What you need
+
+- A **production build** served over HTTPS (or `localhost`). The install prompt does **not** appear during `npm run dev` — `vite-plugin-pwa` intentionally disables service workers in dev mode to avoid stale-cache issues.
+
+### Step 1 — Serve a production build locally
+
+```bash
+npm run build          # compiles everything into dist/
+npx serve dist         # serves dist/ on http://localhost:3000
+```
