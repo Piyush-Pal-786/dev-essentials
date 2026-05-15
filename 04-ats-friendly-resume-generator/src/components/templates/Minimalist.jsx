@@ -1,6 +1,6 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer'
 import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
-import { parseInlineMarkdown } from '../../utils/helpers'
+import { parseInlineMarkdown, normalizeUrl } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -100,7 +100,7 @@ function renderSection(key, data, styles, accent, font) {
             </View>
             <Text style={styles.sub}>
               {[ed.degree, ed.field].filter(Boolean).join(' in ')}
-              {ed.gpa ? `  ·  GPA ${ed.gpa}` : ''}
+              {ed.gpa ? `  ·  ${ed.gpaType || 'GPA'} ${ed.gpa}` : ''}
             </Text>
           </View>
         ))}
@@ -163,10 +163,14 @@ export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helv
   const { personal, summary } = data
   const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
 
-  const contactParts = [
-    personal.email, personal.phone, personal.location,
-    personal.linkedin, personal.github, personal.website,
-  ].filter(Boolean)
+  const contactItems = [
+    { text: personal.email },
+    { text: personal.phone },
+    { text: personal.location },
+    personal.linkedin ? { text: personal.linkedin, href: normalizeUrl(personal.linkedinUrl) } : null,
+    personal.github   ? { text: personal.github,   href: normalizeUrl(personal.githubUrl)   } : null,
+    personal.website  ? { text: personal.website,  href: normalizeUrl(personal.websiteUrl)  } : null,
+  ].filter((c) => c && c.text)
 
   return (
     <Document>
@@ -179,10 +183,13 @@ export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helv
         <View style={styles.accentLine} />
 
         <View style={styles.contactRow}>
-          {contactParts.map((c, i) => (
+          {contactItems.map((c, i) => (
             <View key={i} style={{ flexDirection: 'row' }}>
-              <Text>{c}</Text>
-              {i < contactParts.length - 1 ? <Text style={styles.contactSep}>·</Text> : null}
+              {c.href
+                ? <Link src={c.href}><Text>{c.text}</Text></Link>
+                : <Text>{c.text}</Text>
+              }
+              {i < contactItems.length - 1 ? <Text style={styles.contactSep}>·</Text> : null}
             </View>
           ))}
         </View>

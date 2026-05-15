@@ -129,7 +129,7 @@ export const buildDOCX = async (resumeData, sectionOrder) => {
         const degreeStr = [ed.degree, ed.field].filter(Boolean).join(' in ')
         const dateStr = [ed.startDate, ed.endDate].filter(Boolean).join(' – ')
         children.push(subheading([degreeStr, ed.institution].filter(Boolean).join(', '), dateStr))
-        if (ed.gpa) children.push(...bullet(`GPA: ${ed.gpa}`))
+        if (ed.gpa) children.push(...bullet(`${ed.gpaType || 'GPA'}: ${ed.gpa}`))
       }
     }
 

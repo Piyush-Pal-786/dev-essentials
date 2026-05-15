@@ -45,6 +45,14 @@ export const parseInlineMarkdown = (text) => {
   return segments.length ? segments : [{ text, bold: false, italic: false, underline: false }]
 }
 
+/** Normalize a value to a usable URL for use as a hyperlink href */
+export const normalizeUrl = (val) => {
+  if (!val || !val.trim()) return ''
+  const v = val.trim()
+  if (v.startsWith('http://') || v.startsWith('https://')) return v
+  return 'https://' + v
+}
+
 /** Compute ATS score items from resumeData */
 export const getATSChecks = (resumeData) => {
   const { personal, summary, experience, education, skills, projects } = resumeData

@@ -1,6 +1,6 @@
 import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer'
 import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
-import { parseInlineMarkdown } from '../../utils/helpers'
+import { parseInlineMarkdown, normalizeUrl } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -100,7 +100,7 @@ function renderSection(key, data, styles, font) {
             </View>
             <Text style={styles.degree}>
               {[ed.degree, ed.field].filter(Boolean).join(' in ')}
-              {ed.gpa ? `  ·  GPA: ${ed.gpa}` : ''}
+              {ed.gpa ? `  ·  ${ed.gpaType || 'GPA'}: ${ed.gpa}` : ''}
             </Text>
           </View>
         ))}
@@ -170,10 +170,14 @@ export function ClassicTemplate({ data, accentColor = '#2563eb', font = 'Helveti
   const { personal, summary } = data
   const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
 
-  const contactParts = [
-    personal.email, personal.phone, personal.location,
-    personal.linkedin, personal.github, personal.website,
-  ].filter(Boolean)
+  const contactItems = [
+    { text: personal.email },
+    { text: personal.phone },
+    { text: personal.location },
+    personal.linkedin ? { text: personal.linkedin, href: normalizeUrl(personal.linkedinUrl) } : null,
+    personal.github   ? { text: personal.github,   href: normalizeUrl(personal.githubUrl)   } : null,
+    personal.website  ? { text: personal.website,  href: normalizeUrl(personal.websiteUrl)  } : null,
+  ].filter((c) => c && c.text)
 
   return (
     <Document>
@@ -184,8 +188,10 @@ export function ClassicTemplate({ data, accentColor = '#2563eb', font = 'Helveti
           ? <View><Text style={styles.jobTitle}>{personal.title}</Text></View>
           : null}
         <View style={styles.contactRow}>
-          {contactParts.map((c, i) => (
-            <Text key={i} style={styles.contactItem}>{c}</Text>
+          {contactItems.map((c, i) => (
+            c.href
+              ? <Link key={i} src={c.href} style={styles.contactItem}><Text>{c.text}</Text></Link>
+              : <Text key={i} style={styles.contactItem}>{c.text}</Text>
           ))}
         </View>
 

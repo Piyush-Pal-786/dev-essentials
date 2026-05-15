@@ -18,7 +18,30 @@ function EducationCard({ entry, onUpdate, onRemove }) {
         <Input label="Institution *" value={entry.institution} onChange={u('institution')} placeholder="MIT" />
         <Input label="Degree *" value={entry.degree} onChange={u('degree')} placeholder="Bachelor of Science" />
         <Input label="Field of Study" value={entry.field} onChange={u('field')} placeholder="Computer Science" />
-        <Input label="GPA (optional)" value={entry.gpa} onChange={u('gpa')} placeholder="3.8 / 4.0" />
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-4">
+            <span className="text-xs font-medium text-slate-400">Grade Type</span>
+            {['GPA', 'CGPA'].map((opt) => (
+              <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-sm text-slate-300">
+                <input
+                  type="radio"
+                  name={`gpaType-${entry.id}`}
+                  value={opt}
+                  checked={(entry.gpaType || 'GPA') === opt}
+                  onChange={() => onUpdate(entry.id, 'gpaType', opt)}
+                  className="accent-blue-500"
+                />
+                {opt}
+              </label>
+            ))}
+          </div>
+          <Input
+            label={`${entry.gpaType || 'GPA'} (optional)`}
+            value={entry.gpa}
+            onChange={u('gpa')}
+            placeholder={entry.gpaType === 'CGPA' ? '8.5 / 10' : '3.8 / 4.0'}
+          />
+        </div>
         <Input label="Start Date" value={entry.startDate} onChange={u('startDate')} placeholder="Sep 2018" />
         <Input label="End Date" value={entry.endDate} onChange={u('endDate')} placeholder="May 2022" />
       </div>

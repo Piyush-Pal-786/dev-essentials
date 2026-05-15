@@ -1,6 +1,6 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer'
 import { SECTION_LABELS, FONT_BOLD, FONT_ITALIC, FONT_BOLD_ITALIC } from '../../data/schema'
-import { parseInlineMarkdown } from '../../utils/helpers'
+import { parseInlineMarkdown, normalizeUrl } from '../../utils/helpers'
 
 const mk = (font, accent) =>
   StyleSheet.create({
@@ -77,13 +77,16 @@ export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetic
             { label: 'Email',    value: personal.email },
             { label: 'Phone',    value: personal.phone },
             { label: 'Location', value: personal.location },
-            { label: 'LinkedIn', value: personal.linkedin },
-            { label: 'GitHub',   value: personal.github },
-            { label: 'Website',  value: personal.website },
+            { label: 'LinkedIn', value: personal.linkedin, href: normalizeUrl(personal.linkedinUrl) },
+            { label: 'GitHub',   value: personal.github,   href: normalizeUrl(personal.githubUrl)   },
+            { label: 'Website',  value: personal.website,  href: normalizeUrl(personal.websiteUrl)  },
           ].filter((c) => c.value).map((c) => (
             <View key={c.label} style={{ marginBottom: 5 }}>
               <Text style={styles.sideLabel}>{c.label}</Text>
-              <Text style={styles.sideItem}>{c.value}</Text>
+              {c.href
+                ? <Link src={c.href}><Text style={styles.sideItem}>{c.value}</Text></Link>
+                : <Text style={styles.sideItem}>{c.value}</Text>
+              }
             </View>
           ))}
 
@@ -185,7 +188,7 @@ export function ModernTemplate({ data, accentColor = '#2563eb', font = 'Helvetic
                       </View>
                       <Text style={{ fontSize: 9, color: '#4b5563', marginBottom: 2 }}>
                         {[ed.degree, ed.field].filter(Boolean).join(' in ')}
-                        {ed.gpa ? `  ·  GPA: ${ed.gpa}` : ''}
+                        {ed.gpa ? `  ·  ${ed.gpaType || 'GPA'}: ${ed.gpa}` : ''}
                       </Text>
                     </View>
                   ))}

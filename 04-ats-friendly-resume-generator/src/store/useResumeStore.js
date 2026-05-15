@@ -58,7 +58,7 @@ export const useResumeStore = create(
             ...s.resumeData,
             education: [
               ...s.resumeData.education,
-              { id: genId(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '' },
+              { id: genId(), institution: '', degree: '', field: '', startDate: '', endDate: '', gpa: '', gpaType: 'GPA' },
             ],
           },
         })),
