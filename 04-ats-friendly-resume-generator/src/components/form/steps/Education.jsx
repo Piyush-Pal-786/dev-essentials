@@ -21,7 +21,7 @@ function EducationCard({ entry, onUpdate, onRemove }) {
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-4">
             <span className="text-xs font-medium text-slate-400">Grade Type</span>
-            {['GPA', 'CGPA'].map((opt) => (
+            {['GPA', 'CGPA', 'Percentage'].map((opt) => (
               <label key={opt} className="flex items-center gap-1.5 cursor-pointer text-sm text-slate-300">
                 <input
                   type="radio"
@@ -39,7 +39,7 @@ function EducationCard({ entry, onUpdate, onRemove }) {
             label={`${entry.gpaType || 'GPA'} (optional)`}
             value={entry.gpa}
             onChange={u('gpa')}
-            placeholder={entry.gpaType === 'CGPA' ? '8.5 / 10' : '3.8 / 4.0'}
+            placeholder={entry.gpaType === 'CGPA' ? '8.5 / 10' : entry.gpaType === 'Percentage' ? '85.6%' : '3.8 / 4.0'}
           />
         </div>
         <Input label="Start Date" value={entry.startDate} onChange={u('startDate')} placeholder="Sep 2018" />
