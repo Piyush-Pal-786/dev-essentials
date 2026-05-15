@@ -2,8 +2,43 @@
 
 @variant dark (&:where(.dark, .dark *));
 
-:root {
+/* Default (dark) color-scheme — tells browser to use dark native controls */
+html {
   color-scheme: dark;
+}
+
+/* ─── Light mode ──────────────────────────────────────────────────────────────
+   Override Tailwind v4's CSS variables when .dark is NOT on <html>.
+   Every utility that references these variables (bg-slate-*, text-slate-*,
+   border-slate-*, ring-slate-*) automatically picks up the new values —
+   no per-component dark: prefixes needed.
+
+   Strategy: invert the slate scale so dark-end values become light,
+   and light-end values become dark. ────────────────────────────────────── */
+html:not(.dark) {
+  color-scheme: light;
+
+  /* Slate scale — dark end → light values */
+  --color-slate-950: #f0f4f8;   /* app canvas — light blue-gray            */
+  --color-slate-900: #ffffff;   /* primary surfaces — white                */
+  --color-slate-800: #f1f5f9;   /* inputs, cards — very light gray         */
+  --color-slate-700: #e2e8f0;   /* borders, dividers                       */
+  --color-slate-600: #cbd5e1;   /* subtle borders / placeholder bg         */
+  --color-slate-500: #94a3b8;   /* placeholder / muted text (stays mid)    */
+  --color-slate-400: #64748b;   /* secondary text                          */
+  --color-slate-300: #475569;   /* stronger secondary text                 */
+  --color-slate-200: #334155;   /* even stronger                           */
+  --color-slate-100: #1e293b;   /* primary text — near-black               */
+  --color-slate-50:  #0f172a;   /* strongest text                          */
+
+  /* Colored text — darken for readable contrast on light backgrounds.
+     text-blue-300, text-emerald-400, text-red-400, text-yellow-400 are used
+     as tip text, tag chips, ATS checklist icons, stepper labels. */
+  --color-blue-300:    #1d4ed8;  /* blue-700   */
+  --color-blue-400:    #2563eb;  /* blue-600   */
+  --color-emerald-400: #059669;  /* emerald-600 */
+  --color-yellow-400:  #a16207;  /* yellow-700  */
+  --color-red-400:     #b91c1c;  /* red-700     */
 }
 
 html, body, #root {
@@ -12,8 +47,8 @@ html, body, #root {
   padding: 0;
 }
 
-/* Thin scrollbar */
+/* Thin scrollbar — uses slate-700 which adapts automatically with the override */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: var(--color-slate-700) transparent;
 }
