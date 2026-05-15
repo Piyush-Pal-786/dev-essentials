@@ -8,7 +8,7 @@ assignees: ''
 
 ## Tool
 
-Which tool is affected? (e.g. `ascii-tree-generator`)
+Which tool is affected? (e.g. `01-ascii-tree-generator`)
 
 > 
 

@@ -19,7 +19,7 @@ Closes #
 
 ## Tool(s) Affected
 
-<!-- List the tool folder name(s) this PR touches, or "repo" for repository-wide changes. -->
+<!-- List the tool folder name(s) this PR touches (e.g. `01-ascii-tree-generator`), or `repo` for repository-wide changes. -->
 
 - 
 

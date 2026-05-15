@@ -66,7 +66,7 @@ Every new tool must be self-contained in its own folder under the repository roo
 ### Required folder layout
 
 ```
-<tool-name>/
+<NN>-<tool-name>/
 ├── <tool-name>.html    ← the complete single-file app
 ├── README.md           ← feature guide, use cases, usage instructions
 └── CHANGELOG.md        ← version history (start at v1.0.0)
@@ -75,7 +75,8 @@ Every new tool must be self-contained in its own folder under the repository roo
 ### Naming rules
 
 - Use **`kebab-case`** for the folder name and the HTML file name.
-- The HTML file **must** share the folder name (e.g. `json-formatter/json-formatter.html`).
+- Prefix the folder with the **next sequential two-digit number** followed by a hyphen (e.g. `05-json-formatter/`). This preserves creation order in file explorers and makes the timeline of the project immediately visible. Use zero-padded numbers (`01`, `02`, … `09`, `10`, …).
+- The HTML file inside the folder does **not** include the numeric prefix — it uses only the tool name (e.g. `05-json-formatter/json-formatter.html`).
 - No spaces, no uppercase letters, no underscores in folder or file names.
 
 ### Self-contained requirement
@@ -87,8 +88,8 @@ Every new tool must be self-contained in its own folder under the repository roo
 
 ### Checklist before opening a PR for a new tool
 
-- [ ] Tool folder follows the required layout above
-- [ ] HTML file is named after the tool folder
+- [ ] Tool folder follows the required layout above (`<NN>-<tool-name>/`)
+- [ ] HTML file is named after the tool name without the numeric prefix
 - [ ] Tool works in Chrome, Edge, and Firefox without errors in the browser console
 - [ ] `README.md` includes: purpose, features, usage instructions, and browser compatibility
 - [ ] `CHANGELOG.md` has a `[1.0.0]` entry describing everything that was added
@@ -126,13 +127,13 @@ Use the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) f
 **Examples:**
 
 ```
-feat(ascii-tree-generator): add JSON export format
-fix(ascii-tree-generator): correct leaf count when root is hidden
-docs(ascii-tree-generator): add troubleshooting section to README
-feat(repo): add json-formatter tool
+feat(01-ascii-tree-generator): add JSON export format
+fix(01-ascii-tree-generator): correct leaf count when root is hidden
+docs(01-ascii-tree-generator): add troubleshooting section to README
+feat(repo): add 05-json-formatter tool
 ```
 
-Scope is the tool folder name, or `repo` for repository-wide changes.
+Scope is the tool folder name (including the numeric prefix), or `repo` for repository-wide changes.
 
 ---
 
