@@ -1,0 +1,188 @@
+import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { SECTION_LABELS, FONT_BOLD } from '../../data/schema'
+
+const mk = (font, accent) =>
+  StyleSheet.create({
+    page: {
+      paddingTop: 52, paddingBottom: 46, paddingHorizontal: 58,
+      fontFamily: font, fontSize: 10, color: '#1a1a1a', lineHeight: 1.5,
+    },
+    name: {
+      fontSize: 28, fontFamily: FONT_BOLD[font], color: '#111111',
+      letterSpacing: 1, marginBottom: 2,
+    },
+    jobTitle: { fontSize: 11, color: '#777777', letterSpacing: 0.3, marginBottom: 6 },
+    contactRow: {
+      flexDirection: 'row', flexWrap: 'wrap', fontSize: 8.5,
+      color: '#888888', marginBottom: 22,
+    },
+    contactSep: { marginHorizontal: 6, color: '#cccccc' },
+    divider: {
+      borderBottomWidth: 0.5, borderBottomColor: '#cccccc', marginBottom: 6,
+    },
+    sectionHeader: {
+      fontSize: 8.5, fontFamily: FONT_BOLD[font], color: '#888888',
+      textTransform: 'uppercase', letterSpacing: 1.5,
+      marginTop: 16, marginBottom: 5,
+    },
+    row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 0 },
+    bold: { fontFamily: FONT_BOLD[font], fontSize: 10 },
+    dates: { fontSize: 8.5, color: '#888888' },
+    sub: { fontSize: 9, color: '#555555', marginBottom: 4 },
+    bulletRow: { flexDirection: 'row', marginBottom: 2, marginLeft: 6, marginTop: 1 },
+    bulletDot: { width: 10, color: accent, fontSize: 9 },
+    bulletText: { flex: 1, fontSize: 9.5, color: '#333333' },
+    summaryText: { fontSize: 9.5, color: '#333333', marginBottom: 4 },
+    skillRow: { flexDirection: 'row', marginBottom: 3 },
+    skillCat: { fontFamily: FONT_BOLD[font], width: 90, fontSize: 9.5, color: '#555' },
+    skillItems: { flex: 1, fontSize: 9.5, color: '#444444' },
+    accentLine: {
+      width: 28, height: 2.5, backgroundColor: accent, marginBottom: 14,
+    },
+    projName: { fontFamily: FONT_BOLD[font], fontSize: 10, marginBottom: 1 },
+    projDesc: { fontSize: 9.5, color: '#444444', marginBottom: 1 },
+    projMeta: { fontSize: 8.5, color: '#888888' },
+    certRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 3 },
+    certName: { fontFamily: FONT_BOLD[font], fontSize: 9.5 },
+    certMeta: { fontSize: 8.5, color: '#888888' },
+  })
+
+function renderSection(key, data, styles, accent) {
+  if (key === 'experience' && data.experience.length) {
+    return (
+      <View key="experience">
+        <Text style={styles.sectionHeader}>{SECTION_LABELS.experience}</Text>
+        <View style={styles.divider} />
+        {data.experience.map((e) => (
+          <View key={e.id} style={{ marginBottom: 9 }}>
+            <View style={styles.row}>
+              <Text style={styles.bold}>{e.role}{e.role && e.company ? ' · ' : ''}{e.company}</Text>
+              <Text style={styles.dates}>
+                {[e.startDate, e.current ? 'Present' : e.endDate].filter(Boolean).join(' – ')}
+              </Text>
+            </View>
+            {e.bullets.filter((b) => b.trim()).map((b, i) => (
+              <View key={i} style={styles.bulletRow}>
+                <Text style={styles.bulletDot}>–</Text>
+                <Text style={styles.bulletText}>{b}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'education' && data.education.length) {
+    return (
+      <View key="education">
+        <Text style={styles.sectionHeader}>{SECTION_LABELS.education}</Text>
+        <View style={styles.divider} />
+        {data.education.map((ed) => (
+          <View key={ed.id} style={{ marginBottom: 7 }}>
+            <View style={styles.row}>
+              <Text style={styles.bold}>{ed.institution}</Text>
+              <Text style={styles.dates}>{[ed.startDate, ed.endDate].filter(Boolean).join(' – ')}</Text>
+            </View>
+            <Text style={styles.sub}>
+              {[ed.degree, ed.field].filter(Boolean).join(' in ')}
+              {ed.gpa ? `  ·  GPA ${ed.gpa}` : ''}
+            </Text>
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'skills' && data.skills.length) {
+    return (
+      <View key="skills">
+        <Text style={styles.sectionHeader}>{SECTION_LABELS.skills}</Text>
+        <View style={styles.divider} />
+        {data.skills.filter((s) => s.items.length).map((s) => (
+          <View key={s.id} style={styles.skillRow}>
+            <Text style={styles.skillCat}>{s.category || 'Skills'}</Text>
+            <Text style={styles.skillItems}>{s.items.join(', ')}</Text>
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'projects' && data.projects.length) {
+    return (
+      <View key="projects">
+        <Text style={styles.sectionHeader}>{SECTION_LABELS.projects}</Text>
+        <View style={styles.divider} />
+        {data.projects.map((p) => (
+          <View key={p.id} style={{ marginBottom: 7 }}>
+            <Text style={styles.projName}>{p.name}</Text>
+            {p.description ? <Text style={styles.projDesc}>{p.description}</Text> : null}
+            {p.techStack.length ? <Text style={styles.projMeta}>Tech: {p.techStack.join(', ')}</Text> : null}
+            {p.url ? <Text style={{ ...styles.projMeta, color: accent }}>{p.url}</Text> : null}
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  if (key === 'certifications' && data.certifications.length) {
+    return (
+      <View key="certifications">
+        <Text style={styles.sectionHeader}>{SECTION_LABELS.certifications}</Text>
+        <View style={styles.divider} />
+        {data.certifications.map((c) => (
+          <View key={c.id} style={styles.certRow}>
+            <Text style={styles.certName}>{c.name}</Text>
+            <Text style={styles.certMeta}>{[c.issuer, c.date].filter(Boolean).join(' · ')}</Text>
+          </View>
+        ))}
+      </View>
+    )
+  }
+
+  return null
+}
+
+export function MinimalistTemplate({ data, accentColor = '#2563eb', font = 'Helvetica', sectionOrder }) {
+  const styles = mk(font, accentColor)
+  const { personal, summary } = data
+  const order = sectionOrder || ['experience', 'education', 'skills', 'projects', 'certifications']
+
+  const contactParts = [
+    personal.email, personal.phone, personal.location,
+    personal.linkedin, personal.github, personal.website,
+  ].filter(Boolean)
+
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <Text style={styles.name}>{personal.name || 'Your Name'}</Text>
+        {personal.title ? <Text style={styles.jobTitle}>{personal.title}</Text> : null}
+        <View style={styles.accentLine} />
+
+        <View style={styles.contactRow}>
+          {contactParts.map((c, i) => (
+            <View key={i} style={{ flexDirection: 'row' }}>
+              <Text>{c}</Text>
+              {i < contactParts.length - 1 ? <Text style={styles.contactSep}>·</Text> : null}
+            </View>
+          ))}
+        </View>
+
+        {/* Summary */}
+        {summary.trim() ? (
+          <View>
+            <Text style={styles.sectionHeader}>Profile</Text>
+            <View style={styles.divider} />
+            <Text style={styles.summaryText}>{summary}</Text>
+          </View>
+        ) : null}
+
+        {/* Dynamic sections */}
+        {order.map((key) => renderSection(key, data, styles, accentColor))}
+      </Page>
+    </Document>
+  )
+}
