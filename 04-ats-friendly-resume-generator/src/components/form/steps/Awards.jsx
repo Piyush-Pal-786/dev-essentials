@@ -1,5 +1,6 @@
 import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
-import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { SortableContext, arrayMove, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
@@ -29,10 +30,50 @@ function MarkdownPreview({ text }) {
   )
 }
 
+function SortableBullet({ id, value, showRemove, onUpdate, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.5 : 1 }
+  return (
+    <div ref={setNodeRef} style={style} className="flex flex-col gap-0.5">
+      <div className="flex gap-2 items-start">
+        <button
+          {...listeners}
+          {...attributes}
+          className="mt-2.5 cursor-grab active:cursor-grabbing p-0.5 text-slate-500 hover:text-slate-300 shrink-0 touch-none"
+          tabIndex={-1}
+          title="Drag to reorder"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="9" cy="5" r="1.5" /><circle cx="15" cy="5" r="1.5" />
+            <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
+            <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
+          </svg>
+        </button>
+        <input
+          value={value}
+          onChange={onUpdate}
+          placeholder="Brief description or context…"
+          className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm
+            text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500
+            focus:ring-1 focus:ring-blue-500"
+        />
+        {showRemove && <Button variant="danger" size="icon" onClick={onRemove} title="Remove bullet">×</Button>}
+      </div>
+      <MarkdownPreview text={value} />
+    </div>
+  )
+}
+
 function BulletList({ bullets, onChange }) {
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
   const update = (i, val) => { const next = [...bullets]; next[i] = val; onChange(next) }
   const add    = () => onChange([...bullets, ''])
   const remove = (i) => onChange(bullets.filter((_, idx) => idx !== i))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    onChange(arrayMove(bullets, Number(active.id), Number(over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -45,25 +86,20 @@ function BulletList({ bullets, onChange }) {
         <code className="text-blue-400">__underline__</code>{' '}
         <code className="text-blue-400">***bold italic***</code>
       </p>
-      {bullets.map((b, i) => (
-        <div key={i} className="flex flex-col gap-0.5">
-          <div className="flex gap-2 items-start">
-            <span className="mt-2.5 text-slate-500 text-sm">•</span>
-            <input
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={bullets.map((_, i) => String(i))} strategy={verticalListSortingStrategy}>
+          {bullets.map((b, i) => (
+            <SortableBullet
+              key={i}
+              id={String(i)}
               value={b}
-              onChange={(e) => update(i, e.target.value)}
-              placeholder="Brief description or context…"
-              className="flex-1 rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm
-                text-slate-100 placeholder-slate-500 outline-none focus:border-blue-500
-                focus:ring-1 focus:ring-blue-500"
+              showRemove={bullets.length > 1}
+              onUpdate={(e) => update(i, e.target.value)}
+              onRemove={() => remove(i)}
             />
-            {bullets.length > 1 && (
-              <Button variant="danger" size="icon" onClick={() => remove(i)} title="Remove bullet">×</Button>
-            )}
-          </div>
-          <MarkdownPreview text={b} />
-        </div>
-      ))}
+          ))}
+        </SortableContext>
+      </DndContext>
       <Button variant="ghost" size="sm" onClick={add} className="self-start mt-1">+ Add bullet</Button>
     </div>
   )
