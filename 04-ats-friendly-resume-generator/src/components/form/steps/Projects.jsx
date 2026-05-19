@@ -1,8 +1,11 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { TextArea } from '../../ui/TextArea'
 import { TagInput } from '../../ui/TagInput'
 import { Button } from '../../ui/Button'
+import { SortableItem } from '../../ui/SortableItem'
 
 function ProjectCard({ project, onUpdate, onRemove }) {
   const u = (field) => (e) => onUpdate(project.id, field, e.target.value)
@@ -40,7 +43,14 @@ function ProjectCard({ project, onUpdate, onRemove }) {
 }
 
 export function Projects() {
-  const { resumeData, addProject, updateProject, removeProject } = useResumeStore()
+  const { resumeData, addProject, updateProject, removeProject, reorderProjects } = useResumeStore()
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = resumeData.projects
+    reorderProjects(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -50,14 +60,19 @@ export function Projects() {
         </p>
       )}
 
-      {resumeData.projects.map((p) => (
-        <ProjectCard
-          key={p.id}
-          project={p}
-          onUpdate={updateProject}
-          onRemove={() => removeProject(p.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={resumeData.projects.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {resumeData.projects.map((p) => (
+            <SortableItem key={p.id} id={p.id}>
+              <ProjectCard
+                project={p}
+                onUpdate={updateProject}
+                onRemove={() => removeProject(p.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addProject} className="self-start">
         + Add Project

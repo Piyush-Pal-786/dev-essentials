@@ -1,6 +1,9 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
+import { SortableItem } from '../../ui/SortableItem'
 
 function CertCard({ cert, onUpdate, onRemove }) {
   const u = (field) => (e) => onUpdate(cert.id, field, e.target.value)
@@ -24,7 +27,14 @@ function CertCard({ cert, onUpdate, onRemove }) {
 }
 
 export function Certifications() {
-  const { resumeData, setCertificationsLabel, addCertification, updateCertification, removeCertification } = useResumeStore()
+  const { resumeData, setCertificationsLabel, addCertification, updateCertification, removeCertification, reorderCertifications } = useResumeStore()
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = resumeData.certifications
+    reorderCertifications(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -44,14 +54,19 @@ export function Certifications() {
         </p>
       )}
 
-      {resumeData.certifications.map((c) => (
-        <CertCard
-          key={c.id}
-          cert={c}
-          onUpdate={updateCertification}
-          onRemove={() => removeCertification(c.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={resumeData.certifications.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {resumeData.certifications.map((c) => (
+            <SortableItem key={c.id} id={c.id}>
+              <CertCard
+                cert={c}
+                onUpdate={updateCertification}
+                onRemove={() => removeCertification(c.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addCertification} className="self-start">
         + Add Certification

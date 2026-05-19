@@ -1,7 +1,10 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
 import { parseInlineMarkdown } from '../../../utils/helpers'
+import { SortableItem } from '../../ui/SortableItem'
 
 function MarkdownPreview({ text }) {
   const segments = parseInlineMarkdown(text)
@@ -92,8 +95,15 @@ function ActivityCard({ entry, onUpdate, onRemove }) {
 }
 
 export function Activities() {
-  const { resumeData, setActivitiesLabel, addActivity, updateActivity, removeActivity } = useResumeStore()
+  const { resumeData, setActivitiesLabel, addActivity, updateActivity, removeActivity, reorderActivities } = useResumeStore()
   const activities = resumeData.activities ?? { label: 'Activities', items: [] }
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = activities.items
+    reorderActivities(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -113,14 +123,19 @@ export function Activities() {
         </p>
       )}
 
-      {activities.items.map((entry) => (
-        <ActivityCard
-          key={entry.id}
-          entry={entry}
-          onUpdate={updateActivity}
-          onRemove={() => removeActivity(entry.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={activities.items.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {activities.items.map((entry) => (
+            <SortableItem key={entry.id} id={entry.id}>
+              <ActivityCard
+                entry={entry}
+                onUpdate={updateActivity}
+                onRemove={() => removeActivity(entry.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addActivity} className="self-start">
         + Add Activity

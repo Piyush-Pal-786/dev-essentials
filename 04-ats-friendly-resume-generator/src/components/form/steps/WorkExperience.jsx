@@ -1,8 +1,11 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { TextArea } from '../../ui/TextArea'
 import { Button } from '../../ui/Button'
 import { parseInlineMarkdown } from '../../../utils/helpers'
+import { SortableItem } from '../../ui/SortableItem'
 
 /** Renders a bullet string with inline markdown formatting as a React preview */
 function MarkdownPreview({ text }) {
@@ -121,7 +124,14 @@ function ExperienceCard({ entry, onUpdate, onRemove }) {
 }
 
 export function WorkExperience() {
-  const { resumeData, addExperience, updateExperience, removeExperience } = useResumeStore()
+  const { resumeData, addExperience, updateExperience, removeExperience, reorderExperience } = useResumeStore()
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = resumeData.experience
+    reorderExperience(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -136,14 +146,19 @@ export function WorkExperience() {
         </p>
       )}
 
-      {resumeData.experience.map((entry) => (
-        <ExperienceCard
-          key={entry.id}
-          entry={entry}
-          onUpdate={updateExperience}
-          onRemove={() => removeExperience(entry.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={resumeData.experience.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {resumeData.experience.map((entry) => (
+            <SortableItem key={entry.id} id={entry.id}>
+              <ExperienceCard
+                entry={entry}
+                onUpdate={updateExperience}
+                onRemove={() => removeExperience(entry.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addExperience} className="self-start">
         + Add Experience

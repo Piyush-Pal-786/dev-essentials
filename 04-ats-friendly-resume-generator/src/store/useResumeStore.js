@@ -250,6 +250,22 @@ export const useResumeStore = create(
           },
         })),
 
+      // ── Reorder ───────────────────────────────────────────────────────
+      reorderExperience: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, experience: items } })),
+      reorderEducation: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, education: items } })),
+      reorderSkills: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, skills: items } })),
+      reorderProjects: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, projects: items } })),
+      reorderCertifications: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, certifications: items } })),
+      reorderAwards: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, awards: { ...s.resumeData.awards, items } } })),
+      reorderActivities: (items) =>
+        set((s) => ({ resumeData: { ...s.resumeData, activities: { ...s.resumeData.activities, items } } })),
+
       // ── UI ────────────────────────────────────────────────────────────
       setUI: (field, value) =>
         set((s) => ({ ui: { ...s.ui, [field]: value } })),

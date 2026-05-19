@@ -1,7 +1,10 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
 import { parseInlineMarkdown } from '../../../utils/helpers'
+import { SortableItem } from '../../ui/SortableItem'
 
 function MarkdownPreview({ text }) {
   const segments = parseInlineMarkdown(text)
@@ -92,8 +95,15 @@ function AwardCard({ entry, onUpdate, onRemove }) {
 }
 
 export function Awards() {
-  const { resumeData, setAwardsLabel, addAward, updateAward, removeAward } = useResumeStore()
+  const { resumeData, setAwardsLabel, addAward, updateAward, removeAward, reorderAwards } = useResumeStore()
   const awards = resumeData.awards ?? { label: 'Awards & Honors', items: [] }
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = awards.items
+    reorderAwards(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -113,14 +123,19 @@ export function Awards() {
         </p>
       )}
 
-      {awards.items.map((entry) => (
-        <AwardCard
-          key={entry.id}
-          entry={entry}
-          onUpdate={updateAward}
-          onRemove={() => removeAward(entry.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={awards.items.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {awards.items.map((entry) => (
+            <SortableItem key={entry.id} id={entry.id}>
+              <AwardCard
+                entry={entry}
+                onUpdate={updateAward}
+                onRemove={() => removeAward(entry.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addAward} className="self-start">
         + Add Award / Honor

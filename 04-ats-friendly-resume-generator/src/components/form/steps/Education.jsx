@@ -1,6 +1,9 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { Button } from '../../ui/Button'
+import { SortableItem } from '../../ui/SortableItem'
 
 function EducationCard({ entry, onUpdate, onRemove }) {
   const u = (field) => (e) => onUpdate(entry.id, field, e.target.value)
@@ -50,7 +53,14 @@ function EducationCard({ entry, onUpdate, onRemove }) {
 }
 
 export function Education() {
-  const { resumeData, addEducation, updateEducation, removeEducation } = useResumeStore()
+  const { resumeData, addEducation, updateEducation, removeEducation, reorderEducation } = useResumeStore()
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = resumeData.education
+    reorderEducation(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -60,14 +70,19 @@ export function Education() {
         </p>
       )}
 
-      {resumeData.education.map((entry) => (
-        <EducationCard
-          key={entry.id}
-          entry={entry}
-          onUpdate={updateEducation}
-          onRemove={() => removeEducation(entry.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={resumeData.education.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {resumeData.education.map((entry) => (
+            <SortableItem key={entry.id} id={entry.id}>
+              <EducationCard
+                entry={entry}
+                onUpdate={updateEducation}
+                onRemove={() => removeEducation(entry.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <Button variant="secondary" onClick={addEducation} className="self-start">
         + Add Education

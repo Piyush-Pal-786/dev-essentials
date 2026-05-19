@@ -1,7 +1,10 @@
+import { DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
+import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { useResumeStore } from '../../../store/useResumeStore'
 import { Input } from '../../ui/Input'
 import { TagInput } from '../../ui/TagInput'
 import { Button } from '../../ui/Button'
+import { SortableItem } from '../../ui/SortableItem'
 
 const SUGGESTED_CATEGORIES = ['Languages', 'Frameworks', 'Tools', 'Databases', 'Cloud', 'Soft Skills']
 
@@ -27,7 +30,8 @@ function SkillGroupCard({ group, onUpdate, onRemove }) {
 }
 
 export function Skills() {
-  const { resumeData, addSkillGroup, updateSkillGroup, removeSkillGroup } = useResumeStore()
+  const { resumeData, addSkillGroup, updateSkillGroup, removeSkillGroup, reorderSkills } = useResumeStore()
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor))
 
   const addWithCategory = (cat) => {
     addSkillGroup()
@@ -36,6 +40,12 @@ export function Skills() {
       const latest = useResumeStore.getState().resumeData.skills.at(-1)
       if (latest) updateSkillGroup(latest.id, 'category', cat)
     }, 0)
+  }
+
+  function handleDragEnd({ active, over }) {
+    if (!over || active.id === over.id) return
+    const items = resumeData.skills
+    reorderSkills(arrayMove(items, items.findIndex((x) => x.id === active.id), items.findIndex((x) => x.id === over.id)))
   }
 
   return (
@@ -51,14 +61,19 @@ export function Skills() {
         </p>
       )}
 
-      {resumeData.skills.map((group) => (
-        <SkillGroupCard
-          key={group.id}
-          group={group}
-          onUpdate={updateSkillGroup}
-          onRemove={() => removeSkillGroup(group.id)}
-        />
-      ))}
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={resumeData.skills.map((x) => x.id)} strategy={verticalListSortingStrategy}>
+          {resumeData.skills.map((group) => (
+            <SortableItem key={group.id} id={group.id}>
+              <SkillGroupCard
+                group={group}
+                onUpdate={updateSkillGroup}
+                onRemove={() => removeSkillGroup(group.id)}
+              />
+            </SortableItem>
+          ))}
+        </SortableContext>
+      </DndContext>
 
       <div className="flex flex-wrap gap-2">
         {SUGGESTED_CATEGORIES.map((cat) => (
