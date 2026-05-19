@@ -7,9 +7,10 @@ export function PreviewPane() {
   const resumeData = useResumeStore((s) => s.resumeData)
   const ui         = useResumeStore((s) => s.ui)
 
-  const [pdfUrl,  setPdfUrl]  = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error,   setError]   = useState(null)
+  const [pdfUrl,      setPdfUrl]      = useState(null)
+  const [loading,     setLoading]     = useState(true)
+  const [error,       setError]       = useState(null)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const generate = useCallback(async () => {
     setLoading(true)
@@ -45,8 +46,12 @@ export function PreviewPane() {
   // Cleanup URL on unmount
   useEffect(() => () => { if (pdfUrl) URL.revokeObjectURL(pdfUrl) }, [])
 
+  const containerClass = isFullscreen
+    ? 'fixed inset-0 z-50 flex flex-col bg-slate-900'
+    : 'relative w-full h-full flex flex-col bg-slate-900'
+
   return (
-    <div className="relative w-full h-full flex flex-col bg-slate-900">
+    <div className={containerClass}>
       {/* Loading overlay */}
       {loading && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/80">
@@ -62,6 +67,31 @@ export function PreviewPane() {
           <p className="text-xs text-red-400 text-center">{error}</p>
         </div>
       )}
+
+      {/* Toolbar row — sits directly above the PDF viewer's native toolbar */}
+      <div className="flex justify-end px-2 py-1 bg-slate-800 border-b border-slate-700 shrink-0">
+        <button
+          onClick={() => setIsFullscreen((v) => !v)}
+          title={isFullscreen ? 'Minimize preview' : 'Fullscreen preview'}
+          className="flex items-center justify-center w-7 h-7 rounded hover:bg-slate-600 text-slate-300 transition-colors"
+        >
+          {isFullscreen ? (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="4 14 10 14 10 20" />
+              <polyline points="20 10 14 10 14 4" />
+              <line x1="10" y1="14" x2="3" y2="21" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+            </svg>
+          ) : (
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 3 21 3 21 9" />
+              <polyline points="9 21 3 21 3 15" />
+              <line x1="21" y1="3" x2="14" y2="10" />
+              <line x1="3" y1="21" x2="10" y2="14" />
+            </svg>
+          )}
+        </button>
+      </div>
 
       {pdfUrl && (
         <iframe
